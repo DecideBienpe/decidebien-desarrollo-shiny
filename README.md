@@ -8,4 +8,6 @@ Este repositorio es para el desarrollo y mejora de www.decidebien.pe
 
 - La iniciativa se financia con el apoyo de instituciones y/o amigo. Más informacieon  [aquí](http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/)
 
+- Si quieres colaborar escribeme y te agrego al workspace en slack. 
+
 
