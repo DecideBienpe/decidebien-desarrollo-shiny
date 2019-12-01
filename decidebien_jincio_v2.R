@@ -1,5 +1,7 @@
 library(shiny)
 library(dplyr)
+library(DT)
+#library(datatables)
 
 load("sets.RData")
 
@@ -47,42 +49,25 @@ ui <- fluidPage(
                         selected = 1), class="resetMargin"),
   tags$hr(),
   h3("¿Qué buscas en una lista?"),
+  #fluidRow(
+  #  h4("¿Que no hayan ex-congresistas (2016-2019)?"),
+  #  column(5,wellPanel(
+  #    selectInput("ex", label = "¿Deseo Ex-congresistas de cualquier partido?", 
+  #                choices= list("No"=0,"Me es indiferente"=1),
+  #                selected=1),
+  #    h5("No=Excluye listas con congresistas elect@s en el 2016")
+  #  )), class="resetMargin"),
   fluidRow(
-    h4("¿Que no hayan ex-congresistas (2016-2019)?"),
-    column(5,wellPanel(
-      selectInput("ex", label = "¿Deseo Ex-congresistas de cualquier partido?", 
-                  choices= list("No"=0,"Me es indiferente"=1),
-                  selected=1),
-      h5("Excluye todo congresista elect@s en el 2016")
-    )), class="resetMargin"),
-  p("Puedes filtrar por ex-congresistas según los partidos por los que fueron
-    electos. El filtro de arriba (Ex-congresistas de cualquier partido) tiene que estar
-    en 'Con uno o más'"),
-  fluidRow(
-    column(3,wellPanel(
-      selectInput("ex_fuji", label = "¿Deseo Ex-congresistas Fujimoristas", 
-                  choices = list("No"=0,"Me es indiferente"=1),
-                  selected=1)
-    )),
-    column(3,wellPanel(
-      selectInput("ex_apra", label = "¿Deseo Ex-congresistas Apristas/PPC?", 
-                  choices= list("No"=0,"Me es indiferente"=1),
-                  selected=1),
-      h5("Excluye todo congresista elect@s en el 2016 por ALIANZA-POPULAR")
-    )),
-    column(3,wellPanel(
-      selectInput("ex_ppk", label = "¿Deseo Ex-congresistas de PPK?", 
-                  choices= list("No"=0,"Me es indiferente"=1),
-                  selected=1),
-      h5("Excluye todo congresista elect@s en el 2016 por PPK")
-    )),
-    column(3,wellPanel(
-      selectInput("ex_fa", label = "¿Deseo Ex-congresistas de Frente Amplio?", 
-                  choices= list("No"=0,"Me es indiferente"=1),
-                  selected=1),
-      h5("Excluye todo congresista elect@s en el 2016 por Frente Amplio")
-    ))
-  ),
+    h4("Que no incluya listas con ex-congresistas electos (2016-2019) por:"),
+    column(2,
+           checkboxInput("fuji", label = "Fujimorismo", value = FALSE)),
+    column(2,
+           checkboxInput("apra", label = "APRA/PPC", value = FALSE)),
+    column(2,
+           checkboxInput("ppk", label = "PPK", value = FALSE)),
+    column(2,
+           checkboxInput("fa", label = "Frente Amplio", value = FALSE))
+    ,class="resetMargin"),
   fluidRow(
     h4("¿Que promuevan la equidad de género?"),
     column(3,wellPanel(
@@ -138,20 +123,24 @@ ui <- fluidPage(
 server <- function(input, output) {
   output$table <- DT::renderDataTable({
     data=data2_desarrollo%>%filter(Cod==input$depa)
-    if(input$ex==0){
-      data=data[data$ex==0,]
+    #if(input$ex==0){
+    #  data=data[data$ex==0,]
+    #}
+    if(input$fuji==TRUE)
+    {
+      data=data[data$flag_ex1!=1,]
     }
-    if(input$ex_fuji==0){
-      data=data[data$ex_fuji==0,]
+    if(input$apra==TRUE)
+    {
+      data=data[data$flag_ex1!=2,]
     }
-    if(input$ex_apra==0){
-      data=data[data$ex_apra==0,]
+    if(input$fa==TRUE)
+    {
+      data=data[data$flag_ex1!=3,]
     }
-    if(input$ex_ppk==0){
-      data=data[data$ex_ppk==0,]
-    }
-    if(input$ex_fa==0){
-      data=data[data$ex_fa==0,]
+    if(input$ppk==TRUE)
+    {
+      data=data[data$flag_ex1!=4,]
     }
     if(input$checkbox4==1){
       data=data[data$dif>0,]
