@@ -7,7 +7,7 @@ ui <- fluidPage(
   tags$head(includeScript("ganalytics.js")),
   # App title ----
   h2("¡Decide bien! Elecciones congresales Perú 2020",align="center"),
-  h4("Autor: José Incio-Ph.D Candidate University of Pittsburgh",align = "center"),
+  h4("Autor: José Incio-University of Pittsburgh",align = "center"),
   #h5("Ph.D Candidate-University of Pittsburgh",align = "center"),
   h5(a(href="http://www.joseincio.com/", "www.joseincio.com"),align = "center"),
   h5(a(href="https://twitter.com/Jlincio", "Twitter"),align = "center"),
@@ -115,7 +115,13 @@ ui <- fluidPage(
     # Output: Table summarizing the values entered ----
     h3(textOutput("Region")),
     h5(textOutput("ayuda")),
-    tableOutput("table"),
+    #tableOutput("table"),
+    tabsetPanel(
+      id = 'test',
+      tabPanel("Listas que cumplen tus filtros", DT::dataTableOutput("table")),
+      tabPanel("Todas las listas", DT::dataTableOutput("table2"))
+    ),
+    #tableOutput("table"),
     #tags$hr(style="border-color: red;"),
     #h3(textOutput("caption")),
     #tableOutput("candidates"),
@@ -127,8 +133,8 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  output$table <- renderTable({
-    data=data2%>%filter(Cod==input$depa)
+  output$table <- DT::renderDataTable({
+    data=data2_desarrollo%>%filter(Cod==input$depa)
     if(input$ex==0){
       data=data[data$ex==0,]
     }
@@ -164,13 +170,19 @@ server <- function(input, output) {
         #       "Cabeza-Mujer"="pos_f","#Mujeres"="nm1",
         #        "(cuota+1)"="dif",
         "Num cand. con sentencia penal en la lista"="Sentencia",
-        "Num cand. con senten de alimm/fam en la lista"="Sentencia2")
+        "Num cand. con senten de alimm/fam en la lista"="Sentencia2")%>%
+      datatable(options=list(pageLength = 20))
   })
+  output$table2<-DT::renderDataTable({
+    data=data2_desarrollo%>%filter(Cod==input$depa)%>%
+      dplyr::select(Orgpol,Sentencia,Sentencia2)%>%
+      DT::datatable(options=list(pageLength = 20))})
   output$Region <-renderText(paste({as.character(Codigos[Codigos$Cod==input$depa,1])},
                                    ":Listas que pasan tus filtros"))
   output$ayuda<-renderText({"La tabla muestra el número de candidatos con sentencias declaradas por lista"})
   output$actuali <-renderText({"Data actualizada al: 2019-11-27"})
-  output$contacto<-renderText({"Soy responsable de cualquier error y si encuentras alguno avisame a: jincio@gmail.com"})
+  output$contacto<-renderText({"Soy responsable de cualquier error y 
+    si encuentras alguno avisame a: jincio@gmail.com"})
 }
 
 # Run the application 
