@@ -1,31 +1,34 @@
 library(shiny)
 library(dplyr)
+
 load("sets.RData")
 
 ui <- fluidPage(
   #tags$head(includeHTML("incio.html")),#redes sociales
   tags$head(includeScript("ganalytics.js")),
+  # Main App CSS styles
+  includeCSS("styles.css"),
   # App title ----
-  h2("¡Decide bien! Elecciones congresales Perú 2020",align="center"),
-  h4("Autor: José Incio-University of Pittsburgh",align = "center"),
-  #h5("Ph.D Candidate-University of Pittsburgh",align = "center"),
-  h5(a(href="http://www.joseincio.com/", "www.joseincio.com"),align = "center"),
-  h5(a(href="https://twitter.com/Jlincio", "Twitter"),align = "center"),
+  h2("¡Decide bien! Elecciones congresales Perú 2020",class="centrado titulo"),
+  h4("Autor: José Incio-University of Pittsburgh",class="centrado sub-titulo"),
+  #h5("Ph.D Candidate-University of Pittsburgh",class="centrado"),
+  h5(a(href="http://www.joseincio.com/", "www.joseincio.com"),class="centrado"),
+  h5(a(href="https://twitter.com/Jlincio", "Twitter"),class="centrado"),
   div(h5("En estas elecciones, ¿te cuesta decidir por qué lista votar? Esta aplicación te puede ayudar.
   Te mostramos la/s listas que cumplen con criterios que son importantes para ti. 
   ¡Únete a los miles de peruanos que se informarán antes de dar su voto este enero!"),
-      style = "color:#405d27"),
+      class="textoIntro"),
   #h5("Para saber más de como se ha codificado y saber como apoyar revisa",
   #   a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/", "aquí."),
-  #   style="color:#ff7b25"),
-  h5("Instrucciones:",style="color:#ff7b25" ),
+  #   class="textoIntro"),
+  h5("Instrucciones:",class="textoInstrucciones"),
   div(
     HTML("<ul><li>Cuando abres la página todos los filtros están inactivos. Esta es la opción, 'Me es indiferente'</li>
        <li>Elige tu departamento</li>
        <li>Activa los filtros que son importantes para ti</li>
        <li>Revisa las listas que pasaron tus filtros</li>
-       </ul>"),style="color:#ff7b25" ),
-  tags$hr(style="border-color: blue;"),
+       </ul>"),class="textoInstrucciones"),
+  tags$hr(),
   p("Este app es posible gracias al auspicio de",
     a(href="https://www.transparencia.org.pe/",
       "ASOCIACIÓN CIVIL TRANSPARENCIA"),"
@@ -41,8 +44,8 @@ ui <- fluidPage(
                                        "MOQUEGUA"=19,"PASCO"=20,"PIURA"=21,
                                        "PUNO"=22,"SAN MARTIN"=23,"TACNA"=24,
                                        "TUMBES"=25,"UCAYALI"=26), 
-                        selected = 1)),
-  tags$hr(style="border-color: blue;"),
+                        selected = 1), class="resetMargin"),
+  tags$hr(),
   h3("¿Qué buscas en una lista?"),
   fluidRow(
     h4("¿Que no hayan ex-congresistas (2016-2019)?"),
@@ -51,7 +54,7 @@ ui <- fluidPage(
                   choices= list("No"=0,"Me es indiferente"=1),
                   selected=1),
       h5("Excluye todo congresista elect@s en el 2016")
-    ))),
+    )), class="resetMargin"),
   p("Puedes filtrar por ex-congresistas según los partidos por los que fueron
     electos. El filtro de arriba (Ex-congresistas de cualquier partido) tiene que estar
     en 'Con uno o más'"),
@@ -122,7 +125,7 @@ ui <- fluidPage(
       tabPanel("Todas las listas", DT::dataTableOutput("table2"))
     ),
     #tableOutput("table"),
-    #tags$hr(style="border-color: red;"),
+    #tags$hr(class="divisorOutput"),
     #h3(textOutput("caption")),
     #tableOutput("candidates"),
     h3(textOutput("contacto")),
