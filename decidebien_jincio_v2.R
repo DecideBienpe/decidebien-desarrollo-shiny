@@ -25,7 +25,7 @@ ui <- fluidPage(
   #   class="textoIntro"),
   h5("Instrucciones:",class="textoInstrucciones"),
   div(
-    HTML("<ul><li>Cuando abres la página todos los filtros están inactivos. Esta es la opción, 'Me es indiferente'</li>
+    HTML("<ul><li>Cuando abres la página todos los filtros están inactivos ('Me es indiferente')</li>
        <li>Elige tu departamento</li>
        <li>Activa los filtros que son importantes para ti</li>
        <li>Revisa las listas que pasaron tus filtros</li>
@@ -60,9 +60,9 @@ ui <- fluidPage(
   fluidRow(
     h4("Que no incluya listas con ex-congresistas electos (2016-2019) por:"),
     column(2,
-           checkboxInput("fuji", label = "Fujimorismo", value = FALSE)),
+           checkboxInput("fuji", label = "Fuerza Popular", value = FALSE)),
     column(2,
-           checkboxInput("apra", label = "APRA/PPC", value = FALSE)),
+           checkboxInput("apra", label = "Alianza Popular", value = FALSE)),
     column(2,
            checkboxInput("ppk", label = "PPK", value = FALSE)),
     column(2,
@@ -102,7 +102,7 @@ ui <- fluidPage(
   mainPanel(
     # Output: Table summarizing the values entered ----
     h3(textOutput("Region")),
-    h5(textOutput("ayuda")),
+    h5(textOutput("ayuda"),class="textoInstrucciones"),
     #tableOutput("table"),
     tabsetPanel(
       id = 'test',
@@ -122,7 +122,7 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   output$table <- DT::renderDataTable({
-    data=data2_desarrollo%>%filter(Cod==input$depa)
+    data=data2%>%filter(Cod==input$depa)
     #if(input$ex==0){
     #  data=data[data$ex==0,]
     #}
@@ -157,21 +157,24 @@ server <- function(input, output) {
     if(input$checkbox8==1){
       data=data[data$Sentencia2<1,]
     }
-    data%>%dplyr::select(Orgpol,Sentencia,Sentencia2)%>%
+    data%>%dplyr::select(Orgpol,edad,ExpP)%>%
       rename(#"Ex-Congresistas"="ex","Equidad"="eq1",
         #       "Cabeza-Mujer"="pos_f","#Mujeres"="nm1",
         #        "(cuota+1)"="dif",
-        "Num cand. con sentencia penal en la lista"="Sentencia",
-        "Num cand. con senten de alimm/fam en la lista"="Sentencia2")%>%
+        "Edad promedio"="edad",
+        "% Experiencia política"="ExpP")%>%
       datatable(options=list(pageLength = 20))
   })
   output$table2<-DT::renderDataTable({
-    data=data2_desarrollo%>%filter(Cod==input$depa)%>%
-      dplyr::select(Orgpol,Sentencia,Sentencia2)%>%
+    data=data2%>%filter(Cod==input$depa)%>%
+      dplyr::select(Orgpol,edad,ExpP)%>%
+      rename("Edad promedio"="edad",
+             "% Experiencia política"="ExpP")%>%
       DT::datatable(options=list(pageLength = 20))})
   output$Region <-renderText(paste({as.character(Codigos[Codigos$Cod==input$depa,1])},
                                    ":Listas que pasan tus filtros"))
-  output$ayuda<-renderText({"La tabla muestra el número de candidatos con sentencias declaradas por lista"})
+  output$ayuda<-renderText({"La tabla muestra el promedio de edad de los candidatos por lista (edad) y 
+    el porcentaje de candidatos electos alguna vez para algún cargo, incluye todos los cargos (Experiencia Política)"})
   output$actuali <-renderText({"Data actualizada al: 2019-11-27"})
   output$contacto<-renderText({"Soy responsable de cualquier error y 
     si encuentras alguno avisame a: jincio@gmail.com"})
