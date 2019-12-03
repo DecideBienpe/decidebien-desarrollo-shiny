@@ -122,7 +122,7 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   output$table <- DT::renderDataTable({
-    data=data2%>%filter(Cod==input$depa)
+    data=data2_desarrollo%>%filter(Cod==input$depa)
     #if(input$ex==0){
     #  data=data[data$ex==0,]
     #}
@@ -166,7 +166,7 @@ server <- function(input, output) {
       datatable(options=list(pageLength = 20))
   })
   output$table2<-DT::renderDataTable({
-    data=data2%>%filter(Cod==input$depa)%>%
+    data=data2_desarrollo%>%filter(Cod==input$depa)%>%
       dplyr::select(Orgpol,edad,ExpP)%>%
       rename("Edad promedio"="edad",
              "% Experiencia política"="ExpP")%>%
