@@ -29,13 +29,11 @@ ui <- fluidPage(
        <li>Elige tu departamento</li>
        <li>Activa los filtros que son importantes para ti</li>
        <li>Revisa las listas que pasaron tus filtros</li>
+       <li>Revisa los candidatos de las listas que pasaron tus filtros</li>
        </ul>"),class="textoInstrucciones"),
   tags$hr(),
-  p("Este app es posible gracias al auspicio de",
-    a(href="https://www.transparencia.org.pe/",
-      "ASOCIACIÓN CIVIL TRANSPARENCIA"),"
-    y a la generosa donación de amig@s. Para ver la lista responsables, aportantes y más información sobre los filtros, revisa",
-    a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/","aquí.")),
+  sidebarLayout(
+    sidebarPanel(
   fluidRow(
     selectInput(
       "depa",
@@ -113,7 +111,7 @@ ui <- fluidPage(
       ),
       choiceValues = c(1, 2, 3)
     )
-  ),
+  )),
   mainPanel(
     # Output: Table summarizing the values entered ----
     h3(textOutput("Region")),
@@ -129,9 +127,16 @@ ui <- fluidPage(
     #tags$hr(class="divisorOutput"),
     #h3(textOutput("caption")),
     #tableOutput("candidates"),
-    h3(textOutput("contacto")),
+    #h3(textOutput("contacto")),
     h3(textOutput("actuali"))
-  )
+  )),
+  p("Este app es posible gracias al auspicio de",
+    a(href="https://www.transparencia.org.pe/",
+      "ASOCIACIÓN CIVIL TRANSPARENCIA"),"
+    y a la generosa donación de amig@s. Para ver la lista responsables, aportantes, colaboradores y más información sobre los filtros, revisa",
+    a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/","aquí."),"Esta plataforma fue iniciada por", 
+    a(href="http://www.joseincio.com","José Incio"), "y ahora cuenta con much@s colaboradores
+    Cualquier error con la data escribe a: jincio@gmail.com")
 )
 #)
 
@@ -218,11 +223,11 @@ server <- function(input, output) {
   output$Region <-
     renderText(paste({
       as.character(Codigos[Codigos$Cod == input$depa, 1])
-    },
+    },"#Escaños:",{as.character(Codigos[Codigos$Cod == input$depa, 4])},
     ":Listas que pasan tus filtros"))
   output$ayuda <-
     renderText({
-      "La tabla primera tabla muestra las listas que pasan tus filtros, 
+      "La primera tabla muestra las listas que pasan tus filtros, 
       la segunda los candidatos de esas listas que pasan tus filtros.
       De los candidatos mostramos la edad, experiencia política previa (Experiencia_Pol),
       si tienen sentencia declarada en la hoja de vida o no" })
