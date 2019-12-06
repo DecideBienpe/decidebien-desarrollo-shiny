@@ -5,10 +5,9 @@ library(DT)
 
 load("sets.RData")
 
-ui <- fluidPage(
-  #tags$head(includeHTML("incio.html")),#redes sociales
+ui <- navbarPage("DecideBien",
+                 tabPanel("Filtrar",
   tags$head(includeScript("ganalytics.js")),
-  # Main App CSS styles
   includeCSS("styles.css"),
   # App title ----
   h2("¡Decide bien! Elecciones congresales Perú 2020",class="centrado titulo"),
@@ -34,116 +33,136 @@ ui <- fluidPage(
   tags$hr(),
   sidebarLayout(
     sidebarPanel(
-  fluidRow(
-    selectInput(
-      "depa",
-      label = h3("Elije tu departamento"),
-      choices = list(
-        "AMAZONAS" = 1,
-        "ANCASH" = 2,
-        "APURIMAC" = 3,
-        "AREQUIPA" = 4,
-        "AYACUCHO" = 5,
-        "CAJAMARCA" = 6,
-        "CALLAO" = 7,
-        "CUSCO" = 8,
-        "HUANCAVELICA" = 9,
-        "HUANUCO" = 10,
-        "ICA" = 11,
-        "JUNIN" = 12,
-        "LA LIBERTAD" = 13,
-        "LAMBAYEQUE" = 14,
-        "LIMA + RESIDENTES EN EL EXTRANJERO" =
-          15,
-        "LIMA PROVINCIAS" = 16,
-        "LORETO" = 17,
-        "MADRE DE DIOS" = 18,
-        "MOQUEGUA" = 19,
-        "PASCO" = 20,
-        "PIURA" = 21,
-        "PUNO" = 22,
-        "SAN MARTIN" = 23,
-        "TACNA" = 24,
-        "TUMBES" = 25,
-        "UCAYALI" = 26
+      fluidRow(
+        selectInput(
+          "depa",
+          label = h3("Elije tu departamento"),
+          choices = list(
+            "AMAZONAS" = 1,
+            "ANCASH" = 2,
+            "APURIMAC" = 3,
+            "AREQUIPA" = 4,
+            "AYACUCHO" = 5,
+            "CAJAMARCA" = 6,
+            "CALLAO" = 7,
+            "CUSCO" = 8,
+            "HUANCAVELICA" = 9,
+            "HUANUCO" = 10,
+            "ICA" = 11,
+            "JUNIN" = 12,
+            "LA LIBERTAD" = 13,
+            "LAMBAYEQUE" = 14,
+            "LIMA + RESIDENTES EN EL EXTRANJERO" =
+              15,
+            "LIMA PROVINCIAS" = 16,
+            "LORETO" = 17,
+            "MADRE DE DIOS" = 18,
+            "MOQUEGUA" = 19,
+            "PASCO" = 20,
+            "PIURA" = 21,
+            "PUNO" = 22,
+            "SAN MARTIN" = 23,
+            "TACNA" = 24,
+            "TUMBES" = 25,
+            "UCAYALI" = 26
+          ),
+          selected = 1
+        ),
+        class = "resetMargin"
       ),
-      selected = 1
-    ),
-    class = "resetMargin"
-  ),
-  tags$hr(),
-  h3("¿Qué buscas en una lista?"),
-  fluidRow(
-    # Este código reemplaza los dos select input de abajo
-    checkboxGroupInput(
-      "sentencias",
-      label = "¿Que los candidatos no tengan sentencias?",
-      choiceNames = c(
-        "Deseo descartar listas que tengan candidat@s con sentencias penales (Declaradas en Hoja de Vida)",
-        "Deseo descartar listas que tengan candidat@s con sentencias alimentarias (Declaradas en Hoja de Vida)"
+      tags$hr(),
+      h3("¿Qué buscas en una lista?"),
+      fluidRow(
+        # Este código reemplaza los dos select input de abajo
+        checkboxGroupInput(
+          "sentencias",
+          label = "¿Que los candidatos no tengan sentencias?",
+          choiceNames = c(
+            "Deseo descartar listas que tengan candidat@s con sentencias penales (Declaradas en Hoja de Vida)",
+            "Deseo descartar listas que tengan candidat@s con sentencias alimentarias (Declaradas en Hoja de Vida)"
+          ),
+          choiceValues = c(1, 2)
+        )
       ),
-      choiceValues = c(1, 2)
-    )
-  ),
-    fluidRow(
-    checkboxGroupInput(
-      "ex_congreso",
-      label = "Deseo no incluir listas con ex-congresistas electos (2016-2019) por:",
-      choiceNames = c("Fujimorismo",
-                      "APRA/PPC",
-                      "PPK",
-                      "Frente Amplio"),
-      choiceValues = c(1, 2, 3, 4),
-      inline = TRUE
-    ),
-    class = "resetMargin"
-  ),
-  
-  fluidRow(
-    # Este código reemplaza los tres select input de abajo
-    checkboxGroupInput(
-      "genero",
-      label = "¿Que promuevan la equidad de género?",
-      choiceNames = c(
-        "Deseo listas con más de lo requerido en la cuota (> 30%)",
-        "Deseo listas con paridad (50%)",
-        "Deseo listas con una mujer como cabeza de lista"
+      fluidRow(
+        checkboxGroupInput(
+          "ex_congreso",
+          label = "Deseo no incluir listas con ex-congresistas electos (2016-2019) por:",
+          choiceNames = c("Fuerza Popular",
+                          "Alianza Popular (APRA/PPC)",
+                          "PPK",
+                          "Frente Amplio"),
+          choiceValues = c(1, 2, 3, 4),
+          #inline = TRUE
+        ),
+        class = "resetMargin"
       ),
-      choiceValues = c(1, 2, 3)
-    )
-  )),
-  mainPanel(
-    # Output: Table summarizing the values entered ----
-    h3(textOutput("Region")),
-    h5(textOutput("ayuda"), class = "textoInstrucciones"),
-    #tableOutput("table"),
-    tabsetPanel(
-      id = 'test',
-      tabPanel("Listas que cumplen tus filtros", DT::dataTableOutput("table")),
-      tabPanel("Candidatos (listas filtradas)", DT::dataTableOutput("table3")),
-      tabPanel("Todas las listas", DT::dataTableOutput("table2"))
-    ),
-    #tableOutput("table"),
-    #tags$hr(class="divisorOutput"),
-    #h3(textOutput("caption")),
-    #tableOutput("candidates"),
-    #h3(textOutput("contacto")),
-    h3(textOutput("actuali"))
-  )),
-  p("Este app es posible gracias al auspicio de",
-    a(href="https://www.transparencia.org.pe/",
-      "ASOCIACIÓN CIVIL TRANSPARENCIA"),"
+      
+      fluidRow(
+        # Este código reemplaza los tres select input de abajo
+        checkboxGroupInput(
+          "genero",
+          label = "¿Que promuevan la equidad de género?",
+          choiceNames = c(
+            "Deseo listas con más de lo requerido en la cuota (> 30%)",
+            "Deseo listas con paridad (50%)",
+            "Deseo listas con una mujer como cabeza de lista"
+          ),
+          choiceValues = c(1, 2, 3)
+        )
+      )),
+    mainPanel(
+      # Output: Table summarizing the values entered ----
+      h3(textOutput("Region")),
+      h5(textOutput("ayuda"), class = "textoInstrucciones"),
+      #tableOutput("table"),
+      tabsetPanel(
+        id = 'test',
+        tabPanel("Listas que cumplen tus filtros", DT::dataTableOutput("table")),
+        tabPanel("Candidatos (listas filtradas)", DT::dataTableOutput("table3"))#,
+        #tabPanel("Todas las listas", DT::dataTableOutput("table2"))
+      ),
+      #tableOutput("table"),
+      #tags$hr(class="divisorOutput"),
+      #h3(textOutput("caption")),
+      #tableOutput("candidates"),
+      #h3(textOutput("contacto")),
+      h3(textOutput("actuali"))
+    ))
+),
+tabPanel("ResumenGeneral",
+         p("Aquí resumen de la información por partido")),
+tabPanel("Créditos",
+         p("Este app está en línea gracias al auspicio de",
+           a(href="https://www.transparencia.org.pe/",
+             "ASOCIACIÓN CIVIL TRANSPARENCIA"),"
     y a la generosa donación de amig@s. Para ver la lista responsables, aportantes, colaboradores y más información sobre los filtros, revisa",
-    a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/","aquí."),"Esta plataforma fue iniciada por", 
-    a(href="http://www.joseincio.com","José Incio"), "y ahora cuenta con much@s colaboradores
-    Cualquier error con la data escribe a: jincio@gmail.com")
-)
+           a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/","aquí."),"Esta plataforma fue iniciada por", 
+           a(href="http://www.joseincio.com","José Incio"), "y ahora cuenta con much@s colaboradores
+    Cualquier error con la data escribe a: jincio@gmail.com"),
+         h4("Donantes"),
+         HTML("<ul><li>Angelina Cotler (@CotlerAngelina)</li>
+       <li>Javier Tarrillo (@jtarrillov)</li>
+       <li>Eliana Carlin (@ElianaCarlin)</li>
+       <li>Ricardo Moran (@RicardoMoran)</li>
+       <li>Michele Gabriela Fernandez (@@La_micha)</li>
+       </ul>"),
+         h4("Colaboradores"),
+         HTML("<ul><li>Slack1</li>
+       <li>Slack1</li>
+       <li>Slack1</li>
+       <li>RSlack1</li>
+       <li>Slack1</li>
+       </ul>"),
+         p("Repositorio en Github:",
+           a(href="https://github.com/jincio/decidebien_desarrollo","aquí."))
+         ))
 #)
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   output$table <- DT::renderDataTable({
-    data <- data2_desarrollo %>% filter(Cod == input$depa)
+    data <- data2_desarrollo%>% filter(Cod == input$depa)
     
     # Este código reemplaza los 4 ifs de abajo
     if (!is.null(input$ex_congreso)) {
@@ -176,7 +195,7 @@ server <- function(input, output) {
       DT::datatable(options = list(pageLength = 20))
   })
   output$table2 <- DT::renderDataTable({
-    data <- data2_desarrollo %>% 
+    data <- data2_desarrollo%>% 
       filter(Cod == input$depa) %>%
       dplyr::select(Partido
                     # ,edad,ExpP
@@ -187,7 +206,7 @@ server <- function(input, output) {
       DT::datatable(options = list(pageLength = 20))
   })
   output$table3 <- DT::renderDataTable({
-    data <- data2_desarrollo %>% filter(Cod == input$depa)
+    data <- data2_desarrollo%>% filter(Cod == input$depa)
     
     # Este código reemplaza los 4 ifs de abajo
     if (!is.null(input$ex_congreso)) {
@@ -208,8 +227,8 @@ server <- function(input, output) {
         data <- data %>% filter(Sentencia2 < 1)
     }
     data %>% 
-      dplyr::select(Partido,Candidato,Número,
-                    Edad,ConSentencia,Experiencia_Pol
+      dplyr::select(Partido,Candidato,Número,Sexo,
+                    Edad,ConSentencia,Experiencia_Pol,Estudios
                     # ,edad,ExpP
       ) %>%
       # rename(#"Ex-Congresistas"="ex","Equidad"="eq1",
@@ -218,25 +237,22 @@ server <- function(input, output) {
       #   "Edad promedio"="edad",
       #   "% Experiencia política"="ExpP")%>%
       arrange(Partido, Número)%>%distinct()%>%
-      DT::datatable(options = list(pageLength = 20))
+      DT::datatable(options = list(pageLength = 50))
   })
   output$Region <-
-    renderText(paste({
+    renderText(paste0({
       as.character(Codigos[Codigos$Cod == input$depa, 1])
-    },"#Escaños:",{as.character(Codigos[Codigos$Cod == input$depa, 4])},
-    ":Listas que pasan tus filtros"))
+    },", número de escaños (",{as.character(Codigos[Codigos$Cod == input$depa, 4])},
+    "). Listas que pasan tus filtros:"))
   output$ayuda <-
     renderText({
       "La primera tabla muestra las listas que pasan tus filtros, 
       la segunda los candidatos de esas listas que pasan tus filtros.
       De los candidatos mostramos la edad, experiencia política previa (Experiencia_Pol),
-      si tienen sentencia declarada en la hoja de vida o no" })
+      si tienen sentencia declarada en la hoja de vida o no, y el último grado de estudios alcanzado" })
   output$actuali <- renderText({
     "Data actualizada al: 2019-12-03"
   })
-  output$contacto<-renderText({"Esta iniciativa la inició José Incio, pero ahora es el esfuerzo
-    de muchas personas que están colaborando (ver link arriba). Cualquier error escribe a : jincio@gmail.com"})
-  
 }
 
 # Run the application
