@@ -43,13 +43,13 @@ Create_Tables <- function(){
 #dep_choices <- RSQLite::dbGetQuery(conn, "select Departamento from Departamento")
   
   
-  getIdDepa <- function(strdepa){
+getIdDepa <- function(strdepa){
     conn <- RSQLite::dbConnect(RSQLite::SQLite(), "DecideBien.db")
     dfDepa <- RSQLite::dbGetQuery(conn, "select * from Departamento")
     RSQLite::dbDisconnect(conn)
     IdDepa <- dfDepa %>% filter(Departamento == strdepa) %>% select(IdDepartamento)
     return(IdDepa$IdDepartamento)
   }
-  getIdDepa(strdepa)
+#getIdDepa(strdepa)
   
   

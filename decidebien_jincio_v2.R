@@ -1,12 +1,12 @@
-
 library(shiny)
 library(dplyr)
 library(DT)
+library(ggplot2)
 #library(datatables)
-source("./Functions.r")
+source("Functions.R")
 
 load("sets.RData")
-
+conn <- RSQLite::dbConnect(RSQLite::SQLite(), "DecideBien.db")
 ui <- navbarPage("DecideBien",
                  tabPanel("Filtrar",
   tags$head(includeScript("ganalytics.js")),
@@ -107,7 +107,19 @@ ui <- navbarPage("DecideBien",
     ))
 ),
 tabPanel("ResumenGeneral",
-         p("Aquí resumen de la información por partido")),
+         p("Resumen de la información por partido a nivel nacional"),
+         sidebarLayout(
+           sidebarPanel(
+             selectInput("variable","Variable:",
+                         choices=colnames(resumen[,-c(1,2)])),
+             hr(),
+             helpText("Toma en cuenta las listas que NO
+                      estan declaradas improcedentes")
+           ),
+           mainPanel(
+             plotOutput("resumen1")
+           )
+         )),
 tabPanel("Créditos",
          p("Este app está¡ en línea gracias al auspicio de",
            a(href="https://www.transparencia.org.pe/",
@@ -123,12 +135,13 @@ tabPanel("Créditos",
        <li>Ricardo Moran (@RicardoMoran)</li>
        <li>Michele Gabriela Fernandez (@@La_micha)</li>
        </ul>"),
-         h4("Colaboradores"),
+         h4("Colaboradores/Desarroladores"),
          HTML("<ul><li>Slack1</li>
-       <li>Slack1</li>
-       <li>Slack1</li>
-       <li>RSlack1</li>
-       <li>Slack1</li>
+       <li>Antonio Cucho (Github: antoniocuga)</li>
+       <li>Luis Salas (Github: zattai)</li>
+       <li>Malena Maguina (Github: malenamaguina)</li>
+       <li>Samuel Calderon (Github:calderonsamuel)</li>
+       <li>slack 1</li>
        </ul>"),
          p("Repositorio en Github:",
            a(href="https://github.com/jincio/decidebien_desarrollo","aquí."))
@@ -231,10 +244,36 @@ server <- function(input, output) {
       "La primera tabla muestra las listas que pasan tus filtros,
       la segunda los candidatos de esas listas que pasan tus filtros.
       De los candidatos mostramos la edad, experiencia política previa (Experiencia_Pol),
-      si tienen sentencia declarada en la hoja de vida o no, y el Ãºltimo grado de estudios alcanzado" })
-  
+      si tienen sentencia declarada en la hoja de vida o no, y el úlltimo grado de estudios alcanzado" })
   output$actuali <- renderText({
     "Data actualizada al: 2019-12-03"
+  output$resumen1<-reactivePlot(function()
+    {
+      if(input$variable=="Sentenciados"){
+        resumen=resumen%>%select(Partido,Sentenciados)%>%
+          arrange(Sentenciados)
+        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Sentenciados))+
+          geom_bar(stat="identity")+
+          labs(title="Candidatos con sentencias declaradas", 
+               x="Partido", y = 
+                 "Número de candidatos con sentencias")+
+          coord_flip()+
+          theme_minimal()
+      }
+      if(input$variable=="Eq1"){
+        resumen=resumen%>%select(Partido,Eq1)%>%
+          arrange(Eq1)
+        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Eq1))+
+          geom_bar(stat="identity")+
+          labs(title="Inclusión de género", 
+               x="Partido", y = 
+                 "Porcentaje de mujeres en listas")+
+          coord_flip()+
+          theme_minimal()
+      } 
+    print(p)
+    }
+  )
   })
   
   output$Mapa <- renderImage({
