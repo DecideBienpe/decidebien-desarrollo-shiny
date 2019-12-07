@@ -1,7 +1,9 @@
+
 library(shiny)
 library(dplyr)
 library(DT)
 #library(datatables)
+source("./Functions.r")
 
 load("sets.RData")
 
@@ -17,7 +19,7 @@ ui <- navbarPage("DecideBien",
   #h5(a(href="https://twitter.com/Jlincio", "Twitter"),class="centrado"),
   div(h5("En estas elecciones, ¿te cuesta decidir por qué lista votar? Esta aplicación te puede ayudar.
   Te mostramos la/s listas que cumplen con criterios que son importantes para ti. 
-  ¡Únete a los miles de peruanos que se informarán antes de dar su voto este enero!"),
+  ¡únete a los miles de peruanos que se informarán antes de dar su voto este enero!"),
       class="textoIntro"),
   #h5("Para saber más de como se ha codificado y saber como apoyar revisa",
   #   a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/", "aquí."),
@@ -37,36 +39,8 @@ ui <- navbarPage("DecideBien",
         selectInput(
           "depa",
           label = h3("Elije tu departamento"),
-          choices = list(
-            "AMAZONAS" = 1,
-            "ANCASH" = 2,
-            "APURIMAC" = 3,
-            "AREQUIPA" = 4,
-            "AYACUCHO" = 5,
-            "CAJAMARCA" = 6,
-            "CALLAO" = 7,
-            "CUSCO" = 8,
-            "HUANCAVELICA" = 9,
-            "HUANUCO" = 10,
-            "ICA" = 11,
-            "JUNIN" = 12,
-            "LA LIBERTAD" = 13,
-            "LAMBAYEQUE" = 14,
-            "LIMA + RESIDENTES EN EL EXTRANJERO" =
-              15,
-            "LIMA PROVINCIAS" = 16,
-            "LORETO" = 17,
-            "MADRE DE DIOS" = 18,
-            "MOQUEGUA" = 19,
-            "PASCO" = 20,
-            "PIURA" = 21,
-            "PUNO" = 22,
-            "SAN MARTIN" = 23,
-            "TACNA" = 24,
-            "TUMBES" = 25,
-            "UCAYALI" = 26
-          ),
-          selected = 1
+          choices = RSQLite::dbGetQuery(conn, "select Departamento from Departamento"),
+          selected = "AMAZONAS"
         ),
         class = "resetMargin"
       ),
@@ -76,7 +50,7 @@ ui <- navbarPage("DecideBien",
         # Este código reemplaza los dos select input de abajo
         checkboxGroupInput(
           "sentencias",
-          label = "¿Que los candidatos no tengan sentencias?",
+          label = "¿Qué los candidatos no tengan sentencias?",
           choiceNames = c(
             "Deseo descartar listas que tengan candidat@s con sentencias penales (Declaradas en Hoja de Vida)",
             "Deseo descartar listas que tengan candidat@s con sentencias alimentarias (Declaradas en Hoja de Vida)"
@@ -92,7 +66,7 @@ ui <- navbarPage("DecideBien",
                           "Alianza Popular (APRA/PPC)",
                           "PPK",
                           "Frente Amplio"),
-          choiceValues = c(1, 2, 3, 4),
+          choiceValues = c(1, 2, 3, 4)
           #inline = TRUE
         ),
         class = "resetMargin"
@@ -116,6 +90,8 @@ ui <- navbarPage("DecideBien",
       h3(textOutput("Region")),
       h5(textOutput("ayuda"), class = "textoInstrucciones"),
       #tableOutput("table"),
+      imageOutput("Mapa"),
+      h5("Fuente: www.wikipedia.org"),
       tabsetPanel(
         id = 'test',
         tabPanel("Listas que cumplen tus filtros", DT::dataTableOutput("table")),
@@ -133,9 +109,9 @@ ui <- navbarPage("DecideBien",
 tabPanel("ResumenGeneral",
          p("Aquí resumen de la información por partido")),
 tabPanel("Créditos",
-         p("Este app está en línea gracias al auspicio de",
+         p("Este app está¡ en línea gracias al auspicio de",
            a(href="https://www.transparencia.org.pe/",
-             "ASOCIACIÓN CIVIL TRANSPARENCIA"),"
+             "ASOCIACIóN CIVIL TRANSPARENCIA"),"
     y a la generosa donación de amig@s. Para ver la lista responsables, aportantes, colaboradores y más información sobre los filtros, revisa",
            a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/","aquí."),"Esta plataforma fue iniciada por", 
            a(href="http://www.joseincio.com","José Incio"), "y ahora cuenta con much@s colaboradores
@@ -161,9 +137,14 @@ tabPanel("Créditos",
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  IdDepa <- shiny::eventReactive(input$depa, {
+    getIdDepa(input$depa)
+  })
+  shiny::observe(
+    message("IdDepa = ", IdDepa())  
+  )
   output$table <- DT::renderDataTable({
-    data <- data2_desarrollo%>% filter(Cod == input$depa)
-    
+    data <- data2_desarrollo %>% filter(Cod == IdDepa())
     # Este código reemplaza los 4 ifs de abajo
     if (!is.null(input$ex_congreso)) {
       data <- data %>% filter(!(flag_ex1 %in% input$ex_congreso))
@@ -182,7 +163,7 @@ server <- function(input, output) {
       if (2 %in% input$sentencias)
         data <- data %>% filter(Sentencia2 < 1)
     }
-    data %>% 
+    data %>%
       dplyr::select(Partido
                     # ,edad,ExpP
       ) %>%
@@ -191,12 +172,12 @@ server <- function(input, output) {
       #   #        "(cuota+1)"="dif",
       #   "Edad promedio"="edad",
       #   "% Experiencia política"="ExpP")%>%
-      arrange(Partido) %>%distinct()%>% 
+      arrange(Partido) %>%distinct()%>%
       DT::datatable(options = list(pageLength = 20))
   })
   output$table2 <- DT::renderDataTable({
-    data <- data2_desarrollo%>% 
-      filter(Cod == input$depa) %>%
+    data <- data2_desarrollo%>%
+      filter(Cod == IdDepa()) %>%
       dplyr::select(Partido
                     # ,edad,ExpP
       ) %>%
@@ -206,8 +187,8 @@ server <- function(input, output) {
       DT::datatable(options = list(pageLength = 20))
   })
   output$table3 <- DT::renderDataTable({
-    data <- data2_desarrollo%>% filter(Cod == input$depa)
-    
+    data <- data2_desarrollo%>% filter(Cod == IdDepa())
+
     # Este código reemplaza los 4 ifs de abajo
     if (!is.null(input$ex_congreso)) {
       data <- data %>% filter(!(flag_ex1 %in% input$ex_congreso))
@@ -226,7 +207,7 @@ server <- function(input, output) {
       if (2 %in% input$sentencias)
         data <- data %>% filter(Sentencia2 < 1)
     }
-    data %>% 
+    data %>%
       dplyr::select(Partido,Candidato,Número,Sexo,
                     Edad,ConSentencia,Experiencia_Pol,Estudios
                     # ,edad,ExpP
@@ -241,18 +222,30 @@ server <- function(input, output) {
   })
   output$Region <-
     renderText(paste0({
-      as.character(Codigos[Codigos$Cod == input$depa, 1])
-    },", número de escaños (",{as.character(Codigos[Codigos$Cod == input$depa, 4])},
+      as.character(Codigos[Codigos$Cod == IdDepa(), 1])
+    },", número de escaños (",{as.character(Codigos[Codigos$Cod == IdDepa(), 4])},
     "). Listas que pasan tus filtros:"))
+  
   output$ayuda <-
     renderText({
-      "La primera tabla muestra las listas que pasan tus filtros, 
+      "La primera tabla muestra las listas que pasan tus filtros,
       la segunda los candidatos de esas listas que pasan tus filtros.
       De los candidatos mostramos la edad, experiencia política previa (Experiencia_Pol),
-      si tienen sentencia declarada en la hoja de vida o no, y el último grado de estudios alcanzado" })
+      si tienen sentencia declarada en la hoja de vida o no, y el Ãºltimo grado de estudios alcanzado" })
+  
   output$actuali <- renderText({
     "Data actualizada al: 2019-12-03"
   })
+  
+  output$Mapa <- renderImage({
+    # When input$n is 3, filename is ./images/image3.jpeg
+    filename <- normalizePath(file.path('./www/',paste(input$depa, '.png', sep='')))
+    
+    # Return a list containing the filename and alt text
+    list(src = filename,
+         alt = paste("Image number", input$depa))
+    
+  }, deleteFile = FALSE)
 }
 
 # Run the application
