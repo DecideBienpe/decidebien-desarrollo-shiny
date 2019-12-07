@@ -247,6 +247,7 @@ server <- function(input, output) {
       si tienen sentencia declarada en la hoja de vida o no, y el úlltimo grado de estudios alcanzado" })
   output$actuali <- renderText({
     "Data actualizada al: 2019-12-03"
+  })
   output$resumen1<-reactivePlot(function()
     {
       if(input$variable=="Sentenciados"){
@@ -274,7 +275,6 @@ server <- function(input, output) {
     print(p)
     }
   )
-  })
   
   output$Mapa <- renderImage({
     # When input$n is 3, filename is ./images/image3.jpeg
