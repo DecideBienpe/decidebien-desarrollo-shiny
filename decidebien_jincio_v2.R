@@ -36,12 +36,7 @@ ui <- navbarPage("DecideBien",
   sidebarLayout(
     sidebarPanel(
       fluidRow(
-        selectInput(
-          "depa",
-          label = h3("Elije tu departamento"),
-          choices = RSQLite::dbGetQuery(conn, "select Departamento from Departamento"),
-          selected = "AMAZONAS"
-        ),
+        seldep(strinput = "depa"),
         class = "resetMargin"
       ),
       tags$hr(),
@@ -90,12 +85,14 @@ ui <- navbarPage("DecideBien",
       h3(textOutput("Region")),
       h5(textOutput("ayuda"), class = "textoInstrucciones"),
       #tableOutput("table"),
-      imageOutput("Mapa"),
+      imageOutput("Mapa", width = "50%",height = "50%" ),
       h5("Fuente: www.wikipedia.org"),
       tabsetPanel(
         id = 'test',
-        tabPanel("Listas que cumplen tus filtros", DT::dataTableOutput("table")),
-        tabPanel("Candidatos (listas filtradas)", DT::dataTableOutput("table3"))#,
+        tabPanel("Listas que cumplen tus filtros", 
+                 DT::dataTableOutput("table")),
+        tabPanel("Candidatos (listas filtradas)", 
+                 DT::dataTableOutput("table3"))#,
         #tabPanel("Todas las listas", DT::dataTableOutput("table2"))
       ),
       #tableOutput("table"),
@@ -113,13 +110,13 @@ tabPanel("ResumenGeneral",
              selectInput("variable","Variable:",
                          choices=colnames(resumen[,-c(1,2)])),
              hr(),
-             helpText("Toma en cuenta las listas que NO
-                      estan declaradas improcedentes")
+             helpText("Toma en cuenta las listas que NO estan declaradas improcedentes")
            ),
            mainPanel(
              plotOutput("resumen1")
            )
          )),
+tpAB(resumen = resumen),
 tabPanel("Créditos",
          p("Este app está¡ en línea gracias al auspicio de",
            a(href="https://www.transparencia.org.pe/",
@@ -153,9 +150,6 @@ server <- function(input, output) {
   IdDepa <- shiny::eventReactive(input$depa, {
     getIdDepa(input$depa)
   })
-  shiny::observe(
-    message("IdDepa = ", IdDepa())  
-  )
   output$table <- DT::renderDataTable({
     data <- data2_desarrollo %>% filter(Cod == IdDepa())
     # Este código reemplaza los 4 ifs de abajo
@@ -233,14 +227,12 @@ server <- function(input, output) {
       arrange(Partido, Número)%>%distinct()%>%
       DT::datatable(options = list(pageLength = 50))
   })
-  output$Region <-
-    renderText(paste0({
+  output$Region <-  renderText(paste0({
       as.character(Codigos[Codigos$Cod == IdDepa(), 1])
     },", número de escaños (",{as.character(Codigos[Codigos$Cod == IdDepa(), 4])},
     "). Listas que pasan tus filtros:"))
   
-  output$ayuda <-
-    renderText({
+  output$ayuda <- renderText({
       "La primera tabla muestra las listas que pasan tus filtros,
       la segunda los candidatos de esas listas que pasan tus filtros.
       De los candidatos mostramos la edad, experiencia política previa (Experiencia_Pol),
@@ -276,15 +268,27 @@ server <- function(input, output) {
     }
   )
   
+  #=====================
+  # Mapa
+  #=====================  
   output$Mapa <- renderImage({
-    # When input$n is 3, filename is ./images/image3.jpeg
     filename <- normalizePath(file.path('./www/',paste(input$depa, '.png', sep='')))
-    
-    # Return a list containing the filename and alt text
     list(src = filename,
-         alt = paste("Image number", input$depa))
-    
+         alt = paste("Image number", input$depa),
+         width = 100, height = 100)
   }, deleteFile = FALSE)
+  
+  #=====================
+  # Analisis bivariado
+  #=====================
+  depa <- eventReactive(input$tpAB.gobutton, {input$tpAB.depa})
+  varX <- shiny::eventReactive(input$tpAB.gobutton, {input$tpAB.variableX})
+  varY <- shiny::eventReactive(input$tpAB.gobutton, {input$tpAB.variableY})    
+  
+  output$plotbiv <- renderPlot({
+    g <- getbiv(depa = depa(), varX = varX(), varY = varY())
+    g
+  })
 }
 
 # Run the application
