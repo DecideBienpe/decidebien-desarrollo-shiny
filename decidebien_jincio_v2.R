@@ -2,6 +2,7 @@ library(shiny)
 library(dplyr)
 library(DT)
 library(ggplot2)
+library(grid)
 #library(datatables)
 source("Functions.R")
 
@@ -111,13 +112,15 @@ tabPanel("ResumenGeneral",
          sidebarLayout(
            sidebarPanel(
              selectInput("variable","Variable:",
-                         choices=colnames(resumen[,-c(1,2)])),
+                         choices=colnames(resumen[,-c(1,2,6)])),
              hr(),
              helpText("Toma en cuenta las listas que NO
                       estan declaradas improcedentes")
            ),
            mainPanel(
-             plotOutput("resumen1")
+             plotOutput("resumen1"),
+             tags$hr(),
+             DT::dataTableOutput("tableResumen")
            )
          )),
 tabPanel("Créditos",
@@ -248,6 +251,11 @@ server <- function(input, output) {
   output$actuali <- renderText({
     "Data actualizada al: 2019-12-03"
   })
+  output$tableResumen<-DT::renderDataTable({
+    resumen%>%filter(ExCong>0)%>%
+      select(Partido,ExCong)%>%
+      rename("NúmeroExCongresistas"="ExCong")
+  })
   output$resumen1<-reactivePlot(function()
     {
       if(input$variable=="Sentenciados"){
@@ -261,17 +269,34 @@ server <- function(input, output) {
           coord_flip()+
           theme_minimal()
       }
-      if(input$variable=="Eq1"){
-        resumen=resumen%>%select(Partido,Eq1)%>%
-          arrange(Eq1)
-        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Eq1))+
+      if(input$variable=="Mujeres"){
+        resumen=resumen%>%select(Partido,Mujeres)%>%
+          arrange(Mujeres)
+        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Mujeres))+
           geom_bar(stat="identity")+
           labs(title="Inclusión de género", 
                x="Partido", y = 
                  "Porcentaje de mujeres en listas")+
+          scale_y_continuous(limits = c(0, 100))+
+          annotate("text", x = Inf, y = -Inf, label = "www.decidebien.pe",
+                   hjust=1.1, vjust=-1.1, col="white", cex=6,
+                   fontface = "bold", alpha = 0.8)+
           coord_flip()+
           theme_minimal()
-      } 
+      }
+    if(input$variable=="Experiencia_Pol"){
+      resumen=resumen%>%select(Partido,Experiencia_Pol)%>%
+        arrange(Experiencia_Pol)
+      p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),
+                           y=Experiencia_Pol))+
+        geom_bar(stat="identity")+
+        labs(title="Pasado Político", 
+             x="Partido", y = 
+               "% de candidatos con cargos electos anteriores")+
+        scale_y_continuous(limits = c(0, 100))+
+        coord_flip()+
+        theme_minimal()
+    }
     print(p)
     }
   )
