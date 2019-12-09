@@ -76,7 +76,19 @@ ui <- navbarPage("DecideBien",
           ),
           choiceValues = c(1, 2, 3)
         )
-      )),
+      ),
+      fluidRow(
+        checkboxGroupInput(
+          "designado",
+          label = "¿Que promueva a sus militantes?",
+          choiceNames = c(
+            "Deseo EXCLUIR listas donde el número 1 no fue electo
+            en democracia interna"
+          ),
+          choiceValues = c(1)
+        ) 
+      )
+      ),
     mainPanel(
       # Output: Table summarizing the values entered ----
       h3(textOutput("Region")),
@@ -125,13 +137,13 @@ tabPanel("Créditos",
        <li>Ricardo Moran (@RicardoMoran)</li>
        <li>Michele Gabriela Fernandez (@@La_micha)</li>
        </ul>"),
-         h4("Colaboradores/Desarroladores"),
+         h4("Colaboradores/Desarrolladores"),
          HTML("<ul><li>Slack1</li>
        <li>Antonio Cucho (Github: antoniocuga)</li>
        <li>Luis Salas (Github: zattai)</li>
        <li>Malena Maguina (Github: malenamaguina)</li>
        <li>Samuel Calderon (Github:calderonsamuel)</li>
-       <li>slack 1</li>
+       <li></li>
        </ul>"),
          p("Repositorio en Github:",
            a(href="https://github.com/jincio/decidebien_desarrollo","aquí."))
@@ -162,26 +174,16 @@ server <- function(input, output) {
       if (2 %in% input$sentencias)
         data <- data %>% filter(Sentencia2 < 1)
     }
+    if (!is.null(input$designado)) {
+    if (1 %in% input$designado)
+      data <- data %>% filter(Designado!=1)
+    if (2 %in% input$designado)
+      data <- data %>% filter(Designado==2)
+  }  
     data %>%
       dplyr::select(Partido
                     # ,edad,ExpP
       ) %>%
-      # rename(#"Ex-Congresistas"="ex","Equidad"="eq1",
-      #   #       "Cabeza-Mujer"="pos_f","#Mujeres"="nm1",
-      #   #        "(cuota+1)"="dif",
-      #   "Edad promedio"="edad",
-      #   "% Experiencia política"="ExpP")%>%
-      arrange(Partido) %>%distinct()%>%
-      DT::datatable(options = list(pageLength = 20))
-  })
-  output$table2 <- DT::renderDataTable({
-    data <- data2_desarrollo%>%
-      filter(Cod == IdDepa()) %>%
-      dplyr::select(Partido
-                    # ,edad,ExpP
-      ) %>%
-      # rename("Edad promedio"="edad",
-      #        "% Experiencia política"="ExpP")%>%
       arrange(Partido) %>%distinct()%>%
       DT::datatable(options = list(pageLength = 20))
   })
@@ -206,6 +208,10 @@ server <- function(input, output) {
       if (2 %in% input$sentencias)
         data <- data %>% filter(Sentencia2 < 1)
     }
+    if (!is.null(input$designado)) {
+      if (1 %in% input$designado)
+        data <- data %>% filter(Designado!=1)
+    } 
     data %>%
       dplyr::select(Partido,Candidato,Número,Sexo,
                     Edad,ConSentencia,Experiencia_Pol,Estudios

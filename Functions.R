@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+#<<<<<<< HEAD
 # setwd("c:/users/malen/pucp.pe/Voluntariado/DecideBien/decidebien_desarrollo")
 # load("sets.RData")
 # install.packages("shiny")
@@ -24,7 +24,7 @@ Create_Tables <- function(){
                                   "JUNIN",
                                   "LA LIBERTAD",
                                   "LAMBAYEQUE",
-                                  "LIMA + RESIDENTES EN EL EXTRANJERO",
+                                  "LIMA + EXTERIOR",
                                   "LIMA PROVINCIAS",
                                   "LORETO",
                                   "MADRE DE DIOS",
@@ -106,7 +106,7 @@ getbiv <- function(depa, varX, varY){
 }
 
   
-=======
+#=======
 # setwd("c:/users/malen/pucp.pe/Voluntariado/DecideBien/decidebien_desarrollo")
 # load("sets.RData")
 # install.packages("shiny")
@@ -132,7 +132,7 @@ Create_Tables <- function(){
                                   "JUNIN",
                                   "LA LIBERTAD",
                                   "LAMBAYEQUE",
-                                  "LIMA + RESIDENTES EN EL EXTRANJERO",
+                                  "LIMA + EXTERIOR",
                                   "LIMA PROVINCIAS",
                                   "LORETO",
                                   "MADRE DE DIOS",
@@ -210,4 +210,4 @@ getbiv <- function(depa, varX, varY){
   return(g)
 }
 
->>>>>>> c557dc85f8e3565b0549ab5fe8061c8b03c720df
+#>>>>>>> c557dc85f8e3565b0549ab5fe8061c8b03c720df
