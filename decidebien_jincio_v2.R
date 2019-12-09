@@ -14,10 +14,6 @@ ui <- navbarPage("DecideBien",
   includeCSS("styles.css"),
   # App title ----
   h2("¡Decide bien! Elecciones congresales Perú 2020",class="centrado titulo"),
-  #h4("Colaboradores: José Incio-University of Pittsburgh",class="centrado sub-titulo"),
-  #h5("Ph.D Candidate-University of Pittsburgh",class="centrado"),
-  #h4(a(href="http://www.joseincio.com/", "www.joseincio.com"),class="centrado"),
-  #h5(a(href="https://twitter.com/Jlincio", "Twitter"),class="centrado"),
   div(h5("En estas elecciones, ¿te cuesta decidir por qué lista votar? Esta aplicación te puede ayudar.
   Te mostramos la/s listas que cumplen con criterios que son importantes para ti. 
   ¡únete a los miles de peruanos que se informarán antes de dar su voto este enero!"),
@@ -37,12 +33,7 @@ ui <- navbarPage("DecideBien",
   sidebarLayout(
     sidebarPanel(
       fluidRow(
-        selectInput(
-          "depa",
-          label = h3("Elije tu departamento"),
-          choices = RSQLite::dbGetQuery(conn, "select Departamento from Departamento"),
-          selected = "AMAZONAS"
-        ),
+        seldep(strinput = "depa"),
         class = "resetMargin"
       ),
       tags$hr(),
@@ -91,7 +82,7 @@ ui <- navbarPage("DecideBien",
       h3(textOutput("Region")),
       h5(textOutput("ayuda"), class = "textoInstrucciones"),
       #tableOutput("table"),
-      imageOutput("Mapa"),
+      imageOutput("Mapa",width = "50%",height = "50%" ),
       h5("Fuente: www.wikipedia.org"),
       tabsetPanel(
         id = 'test',
@@ -99,11 +90,6 @@ ui <- navbarPage("DecideBien",
         tabPanel("Candidatos (listas filtradas)", DT::dataTableOutput("table3"))#,
         #tabPanel("Todas las listas", DT::dataTableOutput("table2"))
       ),
-      #tableOutput("table"),
-      #tags$hr(class="divisorOutput"),
-      #h3(textOutput("caption")),
-      #tableOutput("candidates"),
-      #h3(textOutput("contacto")),
       h3(textOutput("actuali"))
     ))
 ),
@@ -123,6 +109,7 @@ tabPanel("ResumenGeneral",
              DT::dataTableOutput("tableResumen")
            )
          )),
+tpAB(resumen=resumen),
 tabPanel("Créditos",
          p("Este app está¡ en línea gracias al auspicio de",
            a(href="https://www.transparencia.org.pe/",
@@ -149,16 +136,12 @@ tabPanel("Créditos",
          p("Repositorio en Github:",
            a(href="https://github.com/jincio/decidebien_desarrollo","aquí."))
          ))
-#)
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   IdDepa <- shiny::eventReactive(input$depa, {
     getIdDepa(input$depa)
   })
-  shiny::observe(
-    message("IdDepa = ", IdDepa())  
-  )
   output$table <- DT::renderDataTable({
     data <- data2_desarrollo %>% filter(Cod == IdDepa())
     # Este código reemplaza los 4 ifs de abajo
@@ -300,6 +283,10 @@ server <- function(input, output) {
     print(p)
     }
   )
+
+#=====================
+# Mapa
+#=====================  
   
   output$Mapa <- renderImage({
     # When input$n is 3, filename is ./images/image3.jpeg
@@ -310,7 +297,18 @@ server <- function(input, output) {
          alt = paste("Image number", input$depa))
     
   }, deleteFile = FALSE)
-}
+  #=====================
+  # Analisis bivariado
+  #=====================
+  depa <- eventReactive(input$tpAB.gobutton, {input$tpAB.depa})
+  varX <- shiny::eventReactive(input$tpAB.gobutton, {input$tpAB.variableX})
+  varY <- shiny::eventReactive(input$tpAB.gobutton, {input$tpAB.variableY})    
+  
+  output$plotbiv <- renderPlot({
+    g <- getbiv(depa = depa(), varX = varX(), varY = varY())
+    g
+  })
+}  
 
 # Run the application
 shinyApp(ui = ui, server = server)
