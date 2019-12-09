@@ -2,6 +2,7 @@ library(shiny)
 library(dplyr)
 library(DT)
 library(ggplot2)
+library(grid)
 #library(datatables)
 source("Functions.R")
 
@@ -13,10 +14,6 @@ ui <- navbarPage("DecideBien",
   includeCSS("styles.css"),
   # App title ----
   h2("¡Decide bien! Elecciones congresales Perú 2020",class="centrado titulo"),
-  #h4("Colaboradores: José Incio-University of Pittsburgh",class="centrado sub-titulo"),
-  #h5("Ph.D Candidate-University of Pittsburgh",class="centrado"),
-  #h4(a(href="http://www.joseincio.com/", "www.joseincio.com"),class="centrado"),
-  #h5(a(href="https://twitter.com/Jlincio", "Twitter"),class="centrado"),
   div(h5("En estas elecciones, ¿te cuesta decidir por qué lista votar? Esta aplicación te puede ayudar.
   Te mostramos la/s listas que cumplen con criterios que son importantes para ti. 
   ¡únete a los miles de peruanos que se informarán antes de dar su voto este enero!"),
@@ -85,21 +82,14 @@ ui <- navbarPage("DecideBien",
       h3(textOutput("Region")),
       h5(textOutput("ayuda"), class = "textoInstrucciones"),
       #tableOutput("table"),
-      imageOutput("Mapa", width = "50%",height = "50%" ),
+      imageOutput("Mapa",width = "50%",height = "50%" ),
       h5("Fuente: www.wikipedia.org"),
       tabsetPanel(
         id = 'test',
-        tabPanel("Listas que cumplen tus filtros", 
-                 DT::dataTableOutput("table")),
-        tabPanel("Candidatos (listas filtradas)", 
-                 DT::dataTableOutput("table3"))#,
+        tabPanel("Listas que cumplen tus filtros", DT::dataTableOutput("table")),
+        tabPanel("Candidatos (listas filtradas)", DT::dataTableOutput("table3"))#,
         #tabPanel("Todas las listas", DT::dataTableOutput("table2"))
       ),
-      #tableOutput("table"),
-      #tags$hr(class="divisorOutput"),
-      #h3(textOutput("caption")),
-      #tableOutput("candidates"),
-      #h3(textOutput("contacto")),
       h3(textOutput("actuali"))
     ))
 ),
@@ -108,15 +98,18 @@ tabPanel("ResumenGeneral",
          sidebarLayout(
            sidebarPanel(
              selectInput("variable","Variable:",
-                         choices=colnames(resumen[,-c(1,2)])),
+                         choices=colnames(resumen[,-c(1,2,6)])),
              hr(),
-             helpText("Toma en cuenta las listas que NO estan declaradas improcedentes")
+             helpText("Toma en cuenta las listas que NO
+                      estan declaradas improcedentes")
            ),
            mainPanel(
-             plotOutput("resumen1")
+             plotOutput("resumen1"),
+             tags$hr(),
+             DT::dataTableOutput("tableResumen")
            )
          )),
-tpAB(resumen = resumen),
+tpAB(resumen=resumen),
 tabPanel("Créditos",
          p("Este app está¡ en línea gracias al auspicio de",
            a(href="https://www.transparencia.org.pe/",
@@ -143,7 +136,6 @@ tabPanel("Créditos",
          p("Repositorio en Github:",
            a(href="https://github.com/jincio/decidebien_desarrollo","aquí."))
          ))
-#)
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -227,18 +219,25 @@ server <- function(input, output) {
       arrange(Partido, Número)%>%distinct()%>%
       DT::datatable(options = list(pageLength = 50))
   })
-  output$Region <-  renderText(paste0({
+  output$Region <-
+    renderText(paste0({
       as.character(Codigos[Codigos$Cod == IdDepa(), 1])
     },", número de escaños (",{as.character(Codigos[Codigos$Cod == IdDepa(), 4])},
     "). Listas que pasan tus filtros:"))
   
-  output$ayuda <- renderText({
+  output$ayuda <-
+    renderText({
       "La primera tabla muestra las listas que pasan tus filtros,
       la segunda los candidatos de esas listas que pasan tus filtros.
       De los candidatos mostramos la edad, experiencia política previa (Experiencia_Pol),
       si tienen sentencia declarada en la hoja de vida o no, y el úlltimo grado de estudios alcanzado" })
   output$actuali <- renderText({
     "Data actualizada al: 2019-12-03"
+  })
+  output$tableResumen<-DT::renderDataTable({
+    resumen%>%filter(ExCong>0)%>%
+      select(Partido,ExCong)%>%
+      rename("NúmeroExCongresistas"="ExCong")
   })
   output$resumen1<-reactivePlot(function()
     {
@@ -253,31 +252,51 @@ server <- function(input, output) {
           coord_flip()+
           theme_minimal()
       }
-      if(input$variable=="Eq1"){
-        resumen=resumen%>%select(Partido,Eq1)%>%
-          arrange(Eq1)
-        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Eq1))+
+      if(input$variable=="Mujeres"){
+        resumen=resumen%>%select(Partido,Mujeres)%>%
+          arrange(Mujeres)
+        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Mujeres))+
           geom_bar(stat="identity")+
           labs(title="Inclusión de género", 
                x="Partido", y = 
                  "Porcentaje de mujeres en listas")+
+          scale_y_continuous(limits = c(0, 100))+
+          annotate("text", x = Inf, y = -Inf, label = "www.decidebien.pe",
+                   hjust=1.1, vjust=-1.1, col="white", cex=6,
+                   fontface = "bold", alpha = 0.8)+
           coord_flip()+
           theme_minimal()
-      } 
+      }
+    if(input$variable=="Experiencia_Pol"){
+      resumen=resumen%>%select(Partido,Experiencia_Pol)%>%
+        arrange(Experiencia_Pol)
+      p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),
+                           y=Experiencia_Pol))+
+        geom_bar(stat="identity")+
+        labs(title="Pasado Político", 
+             x="Partido", y = 
+               "% de candidatos con cargos electos anteriores")+
+        scale_y_continuous(limits = c(0, 100))+
+        coord_flip()+
+        theme_minimal()
+    }
     print(p)
     }
   )
+
+#=====================
+# Mapa
+#=====================  
   
-  #=====================
-  # Mapa
-  #=====================  
   output$Mapa <- renderImage({
+    # When input$n is 3, filename is ./images/image3.jpeg
     filename <- normalizePath(file.path('./www/',paste(input$depa, '.png', sep='')))
+    
+    # Return a list containing the filename and alt text
     list(src = filename,
-         alt = paste("Image number", input$depa),
-         width = 100, height = 100)
+         alt = paste("Image number", input$depa))
+    
   }, deleteFile = FALSE)
-  
   #=====================
   # Analisis bivariado
   #=====================
@@ -289,7 +308,7 @@ server <- function(input, output) {
     g <- getbiv(depa = depa(), varX = varX(), varY = varY())
     g
   })
-}
+}  
 
 # Run the application
 shinyApp(ui = ui, server = server)
