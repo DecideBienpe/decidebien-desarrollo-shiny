@@ -316,7 +316,10 @@ server <- function(input, output) {
                x="Partido", y = 
                  "Número de candidatos con sentencias")+
           coord_flip()+
-          theme_minimal()
+          theme_minimal()+
+          annotate("text", x = 11, y = 10, label = "www.decidebien.pe",
+                   hjust=0.5, vjust=0.5, col="red", cex=6,
+                   fontface = "bold", alpha = 0.2)
       }
     
     # Gráfico de porcentaje de mujeres
@@ -348,7 +351,10 @@ server <- function(input, output) {
                "% de candidatos con cargos electos anteriores")+
         scale_y_continuous(limits = c(0, 100))+
         coord_flip()+
-        theme_minimal()
+        theme_minimal()+
+        annotate("text", x = 11, y = 50, label = "www.decidebien.pe",
+                 hjust=0.5, vjust=0.5, col="red", cex=6,
+                 fontface = "bold", alpha = 0.2)
     }
     
     # Gráfico final
