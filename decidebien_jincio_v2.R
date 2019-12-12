@@ -306,61 +306,9 @@ server <- function(input, output) {
   # Gráfico de main panel de segunda página: Resumen según variable escogida
   output$resumen1<-renderPlot({
     
-    # Gráfico de porcentaje de sentenciados
-      if(input$variable=="Sentenciados"){
-        resumen=resumen%>%select(Partido,Sentenciados)%>%
-          arrange(Sentenciados)
-        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Sentenciados))+
-          geom_bar(stat="identity")+
-          labs(title="Candidatos con sentencias declaradas", 
-               x="Partido", y = 
-                 "Número de candidatos con sentencias")+
-          coord_flip()+
-          theme_minimal()+
-          annotate("text", x = 11, y = 10, label = "www.decidebien.pe",
-                   hjust=0.5, vjust=0.5, col="red", cex=6,
-                   fontface = "bold", alpha = 0.2)
-      }
+    grafico_resumen(df = resumen, variable = input$variable)
     
-    # Gráfico de porcentaje de mujeres
-      if(input$variable=="Mujeres"){
-        resumen=resumen%>%select(Partido,Mujeres)%>%
-          arrange(Mujeres)
-        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Mujeres))+
-          geom_bar(stat="identity")+
-          labs(title="Inclusión de género", 
-               x="Partido", y = 
-                 "Porcentaje de mujeres en listas")+
-          scale_y_continuous(limits = c(0, 100))+
-          annotate("text", x = 11, y = 50, label = "www.decidebien.pe",
-                   hjust=0.5, vjust=0.5, col="red", cex=6,
-                   fontface = "bold", alpha = 0.2)+
-          coord_flip()+
-          theme_minimal()
-      }
-    
-    # Gráfico de porcentaje de candidatos con experiencia previa en cargos
-    if(input$variable=="Experiencia_Pol"){
-      resumen=resumen%>%select(Partido,Experiencia_Pol)%>%
-        arrange(Experiencia_Pol)
-      p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),
-                           y=Experiencia_Pol))+
-        geom_bar(stat="identity")+
-        labs(title="Pasado Político", 
-             x="Partido", y = 
-               "% de candidatos con cargos electos anteriores")+
-        scale_y_continuous(limits = c(0, 100))+
-        coord_flip()+
-        theme_minimal()+
-        annotate("text", x = 11, y = 50, label = "www.decidebien.pe",
-                 hjust=0.5, vjust=0.5, col="red", cex=6,
-                 fontface = "bold", alpha = 0.2)
-    }
-    
-    # Gráfico final
-    print(p)
-    }
-  )
+    })
 
   
   # Mapa de main panel de primera página

@@ -94,3 +94,46 @@ getbiv <- function(depa, varX, varY){
   g <- g + ggplot2::xlim(0,100)
   return(g)
 }
+
+# Gráfico para resumen en página dos
+grafico_resumen <- function(df, variable){
+  titulo <- function(variable){
+    dplyr::case_when(variable == "Sentenciados" ~ "Candidatos con sentencias declaradas",
+                     variable == "Mujeres" ~ "Inclusión de género",
+                     variable == "Experiencia_Pol" ~ "Pasado Político",
+                     TRUE ~ as.character(variable))
+  }
+  
+  etiqueta_y <- function(variable){
+    dplyr::case_when(variable == "Sentenciados" ~ "Número de candidatos con sentencias",
+                     variable == "Mujeres" ~ "Porcentaje de mujeres en listas",
+                     variable == "Experiencia_Pol" ~ "Porcentaje de candidatos con cargos electos anteriores",
+                     TRUE ~ as.character(variable))
+  }
+  
+  df %>% 
+    select(Partido, !!rlang::sym(variable)) %>%
+    arrange(!!rlang::sym(variable)) %>% 
+    ggplot(aes(x = factor(Partido, levels = Partido), y = !!rlang::sym(variable))) +
+    geom_bar(stat = "identity") +
+    labs(title = titulo(variable),
+         x = "Partido", 
+         y = etiqueta_y(variable)) +
+    scale_y_continuous(limits = c(0, 100))+
+    coord_flip() +
+    theme_minimal() +
+    geom_text(aes(y = !!rlang::sym(variable) + 1, 
+                  label = as.character(!!rlang::sym(variable))
+    ), hjust = 0)+
+    annotate("text",
+             x = c(5.5, 11, 16.5),
+             y = 50,
+             label = "www.decidebien.pe",
+             hjust = 0.5,
+             vjust = 0.5,
+             col = "red",
+             cex = 6,
+             fontface = "bold",
+             alpha = 0.2
+    )
+}
