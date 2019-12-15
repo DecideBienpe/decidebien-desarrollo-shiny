@@ -3,43 +3,63 @@ library(dplyr)
 library(DT)
 library(ggplot2)
 library(grid)
-#library(datatables)
+library(stringr)
+
 source("Functions.R")
 
 load("sets.RData")
+
 conn <- RSQLite::dbConnect(RSQLite::SQLite(), "DecideBien.db")
-ui <- navbarPage("DecideBien",
-                 tabPanel("Filtrar",
+ui <- navbarPage(title = "DecideBien",
+                 
+# Primera página de la barra de navegación
+  tabPanel("Filtrar",
+           
   tags$head(includeScript("ganalytics.js")),
   includeCSS("styles.css"),
-  # App title ----
-  h2("¡Decide bien! Elecciones congresales Perú 2020",class="centrado titulo"),
-  div(h5("En estas elecciones, ¿te cuesta decidir por qué lista votar? Esta aplicación te puede ayudar.
+  
+  # Título de la página
+  h2("¡Decide bien! Elecciones congresales Perú 2020", class="centrado titulo"),
+  
+  # Presentación
+  div(class="textoIntro",
+  h5("En estas elecciones, ¿te cuesta decidir por qué lista votar? Esta aplicación te puede ayudar.
   Te mostramos la/s listas que cumplen con criterios que son importantes para ti. 
-  ¡únete a los miles de peruanos que se informarán antes de dar su voto este enero!"),
-      class="textoIntro"),
-  #h5("Para saber más de como se ha codificado y saber como apoyar revisa",
-  #   a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/", "aquí."),
-  #   class="textoIntro"),
+  ¡únete a los miles de peruanos que se informarán antes de dar su voto este enero!")
+      ),
+  
+  # Instrucciones
   h5("Instrucciones:",class="textoInstrucciones"),
+  
   div(
-    HTML("<ul><li>Cuando abres la página todos los filtros están inactivos</li>
-       <li>Elige tu departamento</li>
-       <li>Activa los filtros que son importantes para ti</li>
-       <li>Revisa las listas que pasaron tus filtros</li>
-       <li>Revisa los candidatos de las listas que pasaron tus filtros</li>
-       </ul>"),class="textoInstrucciones"),
+    tags$ul(class = "textoInstrucciones",
+      tags$li("Cuando abres la página todos los filtros están inactivos"),
+      tags$li("Elige tu departamento"),
+      tags$li("Activa los filtros que son importantes para ti"),
+      tags$li("Revisa las listas que pasaron tus filtros"),
+      tags$li("Revisa los candidatos de las listas que pasaron tus filtros")
+    )),
+  
   tags$hr(),
+  
+  # Layout de inputs y tablas
   sidebarLayout(
+    
+    # sidebar para inputs
     sidebarPanel(
+      
+      # Selector de departamento
       fluidRow(
         seldep(strinput = "depa"),
         class = "resetMargin"
       ),
+      
       tags$hr(),
+      
       h3("¿Qué buscas en una lista?"),
+      
+      # Checkbox de sentencias
       fluidRow(
-        # Este código reemplaza los dos select input de abajo
         checkboxGroupInput(
           "sentencias",
           label = "¿Qué los candidatos no tengan sentencias?",
@@ -50,6 +70,8 @@ ui <- navbarPage("DecideBien",
           choiceValues = c(1, 2)
         )
       ),
+      
+      # Checkbox de ex congresistas
       fluidRow(
         checkboxGroupInput(
           "ex_congreso",
@@ -59,11 +81,11 @@ ui <- navbarPage("DecideBien",
                           "PPK",
                           "Frente Amplio"),
           choiceValues = c(1, 2, 3, 4)
-          #inline = TRUE
         ),
         class = "resetMargin"
       ),
       
+      # Checkbox de género
       fluidRow(
         # Este código reemplaza los tres select input de abajo
         checkboxGroupInput(
@@ -77,6 +99,8 @@ ui <- navbarPage("DecideBien",
           choiceValues = c(1, 2, 3)
         )
       ),
+      
+      # Checkbox de democracia interna
       fluidRow(
         checkboxGroupInput(
           "designado",
@@ -89,25 +113,42 @@ ui <- navbarPage("DecideBien",
         ) 
       )
       ),
+    
+    # Contenedor de mapa y tablas filtradas
     mainPanel(
-      # Output: Table summarizing the values entered ----
+      
       h3(textOutput("Region")),
-      h5(textOutput("ayuda"), class = "textoInstrucciones"),
-      #tableOutput("table"),
-      imageOutput("Mapa",width = "50%",height = "50%" ),
-      h5("Fuente: www.wikipedia.org"),
+      h5(textOutput("ayuda"), 
+         class = "textoInstrucciones"),
+      
+      # Mapa con departamento resaltado
+      imageOutput("Mapa",
+                  width = "50%",
+                  height = "50%" ),
+      h5("Fuente: ", tags$a(href = "https://es.wikipedia.org/wiki/Departamentos_del_Per%C3%BA#Circunscripciones_actuales", "www.wikipedia.org")),
+      
+      # Panel de tablas filtrados
       tabsetPanel(
         id = 'test',
         tabPanel("Listas que cumplen tus filtros", DT::dataTableOutput("table")),
-        tabPanel("Candidatos (listas filtradas)", DT::dataTableOutput("table3"))#,
-        #tabPanel("Todas las listas", DT::dataTableOutput("table2"))
-      ),
+        tabPanel("Candidatos (listas filtradas)", DT::dataTableOutput("table3"))
+        ),
+      
+      # Fecha de actualización
       h3(textOutput("actuali"))
-    ))
-),
+            )
+         )
+      ),
+
+# Segunda página de la barra de navegación
 tabPanel("ResumenGeneral",
+         
          p("Resumen de la información por partido a nivel nacional"),
+         
+         # Layout para resumen general
          sidebarLayout(
+           
+           # Sidebar panel para input de variable
            sidebarPanel(
              selectInput("variable","Variable:",
                          choices=colnames(resumen[,-c(1,2,6)])),
@@ -115,51 +156,75 @@ tabPanel("ResumenGeneral",
              helpText("Toma en cuenta las listas que NO
                       estan declaradas improcedentes")
            ),
+           
+           # Panel de gráfico de resumen
            mainPanel(
              plotOutput("resumen1"),
+             
              tags$hr(),
+             
+             # Tabla de resumen
              DT::dataTableOutput("tableResumen")
            )
          )),
+
+# Tercera página de la barra de navegación: Análisis Bivariado
 tpAB(resumen=resumen),
+
+# Cuarta página de la barra de navegación: Créditos
 tabPanel("Créditos",
-         p("Este app está¡ en línea gracias al auspicio de",
+         
+         # Presentación
+         p("Este app está en línea gracias al auspicio de",
            a(href="https://www.transparencia.org.pe/",
-             "ASOCIACIóN CIVIL TRANSPARENCIA"),"
+             "ASOCIACIÓN CIVIL TRANSPARENCIA"),"
     y a la generosa donación de amig@s. Para ver la lista responsables, aportantes, colaboradores y más información sobre los filtros, revisa",
            a(href="http://www.joseincio.com/post/decide-bien-elecciones-congresales-2020/","aquí."),"Esta plataforma fue iniciada por", 
            a(href="http://www.joseincio.com","José Incio"), "y ahora cuenta con much@s colaboradores
     Cualquier error con la data escribe a: jincio@gmail.com"),
+         
          h4("Donantes"),
-         HTML("<ul><li>Angelina Cotler (@CotlerAngelina)</li>
-       <li>Javier Tarrillo (@jtarrillov)</li>
-       <li>Eliana Carlin (@ElianaCarlin)</li>
-       <li>Ricardo Moran (@RicardoMoran)</li>
-       <li>Michele Gabriela Fernandez (@@La_micha)</li>
-       </ul>"),
+         
+         tags$ul(
+           tags$li("Angelina Cotler (@CotlerAngelina)"),
+           tags$li("Javier Tarrillo (@jtarrillov)"),
+           tags$li("Eliana Carlin (@ElianaCarlin)"),
+           tags$li("Ricardo Moran (@RicardoMoran)"),
+           tags$li("Michele Gabriela Fernandez (@La_micha)"),
+         ),
+         
          h4("Colaboradores/Desarrolladores"),
-         HTML("<ul><li>Slack1</li>
-       <li>Antonio Cucho (Github: antoniocuga)</li>
-       <li>Luis Salas (Github: zattai)</li>
-       <li>Malena Maguina (Github: malenamaguina)</li>
-       <li>Samuel Calderon (Github:calderonsamuel)</li>
-       <li></li>
-       </ul>"),
+         
+         tags$ul(
+           tags$li("Antonio Cucho (Github: ", tags$a(href = "https://github.com/antoniocuga", "antoniocuga"),")"),
+           tags$li("Luis Salas (Github: ", tags$a(href = "https://github.com/zettai", "zettai"), ")"),
+           tags$li("Malena Maguina (Github: ", tags$a(href = "https://github.com/malenamaguina", "malenamaguina"), ")"),
+           tags$li("Samuel Calderon (Github: ", tags$a(href = "https://github.com/calderonsamuel", "calderonsamuel"), ")"),
+         ),
+         
          p("Repositorio en Github:",
            a(href="https://github.com/jincio/decidebien_desarrollo","aquí."))
          ))
 
-# Define server logic required to draw a histogram
+# Define server logic 
 server <- function(input, output) {
+  
+  # Reactive para elegir departamento en primera página
   IdDepa <- shiny::eventReactive(input$depa, {
     getIdDepa(input$depa)
   })
-  output$table <- DT::renderDataTable({
+  
+  # Reactive para filtrado de tabla basado en inputs
+  datos <- reactive({
+    # Se asigna el valor de la tabla completa a variable data
     data <- data2_desarrollo %>% filter(Cod == IdDepa())
-    # Este código reemplaza los 4 ifs de abajo
+    
+    # Filtrado de listas con ex congresistas
     if (!is.null(input$ex_congreso)) {
       data <- data %>% filter(!(flag_ex1 %in% input$ex_congreso))
     }
+    
+    # Filtrado de listas según temas de género
     if (!is.null(input$genero)) {
       if (1 %in% input$genero)
         data <- data %>% filter(dif > 0)
@@ -168,85 +233,80 @@ server <- function(input, output) {
       if (3 %in% input$genero)
         data <- data %>% filter(pos_f == 1)
     }
+    
+    # Filtrado de listas con candidatos sentenciados
     if (!is.null(input$sentencias)) {
       if (1 %in% input$sentencias)
         data <- data %>% filter(Sentencia < 1)
       if (2 %in% input$sentencias)
         data <- data %>% filter(Sentencia2 < 1)
     }
-    if (!is.null(input$designado)) {
-    if (1 %in% input$designado)
-      data <- data %>% filter(Designado!=1)
-    if (2 %in% input$designado)
-      data <- data %>% filter(Designado==2)
-  }  
-    data %>%
-      dplyr::select(Partido
-                    # ,edad,ExpP
-      ) %>%
-      arrange(Partido) %>%distinct()%>%
-      DT::datatable(options = list(pageLength = 20))
-  })
-  output$table3 <- DT::renderDataTable({
-    data <- data2_desarrollo%>% filter(Cod == IdDepa())
-
-    # Este código reemplaza los 4 ifs de abajo
-    if (!is.null(input$ex_congreso)) {
-      data <- data %>% filter(!(flag_ex1 %in% input$ex_congreso))
-    }
-    if (!is.null(input$genero)) {
-      if (1 %in% input$genero)
-        data <- data %>% filter(dif > 0)
-      if (2 %in% input$genero)
-        data <- data %>% filter(eq1 >= 49)
-      if (3 %in% input$genero)
-        data <- data %>% filter(pos_f == 1)
-    }
-    if (!is.null(input$sentencias)) {
-      if (1 %in% input$sentencias)
-        data <- data %>% filter(Sentencia < 1)
-      if (2 %in% input$sentencias)
-        data <- data %>% filter(Sentencia2 < 1)
-    }
+    
+    # Filtrado de listas con numero 1 designado
     if (!is.null(input$designado)) {
       if (1 %in% input$designado)
         data <- data %>% filter(Designado!=1)
-    } 
-    data %>%
+    }
+    return(data)
+  })
+  
+  # Primer Tab Panel de primera página: Aplicación de filtros para tabla de partidos filtrada
+  output$table <- DT::renderDataTable({
+    
+    # Seleccionando sólo columna con nombres de partidos que pasan los filtros. Es la tabla que ve el usuario
+    datos() %>%
+      dplyr::select(Partido) %>%
+      arrange(Partido) %>%
+      distinct()%>%
+      DT::datatable(options = list(pageLength = 20))
+  })
+  
+  # Segundo Tab Panel de primera página: Lista filtrada de candidatos
+  output$table3 <- DT::renderDataTable({
+    
+    # Seleccionando variables relevantes de datos de candidatos en listas filtradas. Es la tabla que ve el usuario
+    datos() %>%
       dplyr::select(Partido,Candidato,Número,Sexo,
-                    Edad,ConSentencia,Experiencia_Pol,Estudios
-                    # ,edad,ExpP
-      ) %>%
-      # rename(#"Ex-Congresistas"="ex","Equidad"="eq1",
-      #   #       "Cabeza-Mujer"="pos_f","#Mujeres"="nm1",
-      #   #        "(cuota+1)"="dif",
-      #   "Edad promedio"="edad",
-      #   "% Experiencia política"="ExpP")%>%
-      arrange(Partido, Número)%>%distinct()%>%
+                    Edad,ConSentencia,Experiencia_Pol,Estudios) %>%
+      mutate(str_numero = as.character(`Número`),
+             str_numero =  str_pad(str_numero, width = 2, side = "left", pad = "0")) %>% 
+      arrange(Partido, str_numero)%>%
+      dplyr::select(-str_numero) %>% 
+      distinct()%>%
       DT::datatable(options = list(pageLength = 50))
   })
+  
+  # Título de main panel de primera página: Región
   output$Region <-
     renderText(paste0({
       as.character(Codigos[Codigos$Cod == IdDepa(), 1])
     },", número de escaños (",{as.character(Codigos[Codigos$Cod == IdDepa(), 4])},
     "). Listas que pasan tus filtros:"))
   
+  # Texto de ayuda de main panel de primera página
   output$ayuda <-
     renderText({
       "La primera tabla muestra las listas que pasan tus filtros,
       la segunda los candidatos de esas listas que pasan tus filtros.
       De los candidatos mostramos la edad, experiencia política previa (Experiencia_Pol),
       si tienen sentencia declarada en la hoja de vida o no, y el úlltimo grado de estudios alcanzado" })
+  
+  # Texto en main panel de primera página: fecha de actualización de data
   output$actuali <- renderText({
     "Data actualizada al: 2019-12-03"
   })
+  
+  # Tabla en segunda página: Resumen de partidos con cantidad de ex congresistas. No está relacionada con inputs
   output$tableResumen<-DT::renderDataTable({
     resumen%>%filter(ExCong>0)%>%
       select(Partido,ExCong)%>%
       rename("NúmeroExCongresistas"="ExCong")
   })
-  output$resumen1<-reactivePlot(function()
-    {
+  
+  # Gráfico de main panel de segunda página: Resumen según variable escogida
+  output$resumen1<-renderPlot({
+    
+    # Gráfico de porcentaje de sentenciados
       if(input$variable=="Sentenciados"){
         resumen=resumen%>%select(Partido,Sentenciados)%>%
           arrange(Sentenciados)
@@ -256,8 +316,13 @@ server <- function(input, output) {
                x="Partido", y = 
                  "Número de candidatos con sentencias")+
           coord_flip()+
-          theme_minimal()
+          theme_minimal()+
+          annotate("text", x = 11, y = 10, label = "www.decidebien.pe",
+                   hjust=0.5, vjust=0.5, col="red", cex=6,
+                   fontface = "bold", alpha = 0.2)
       }
+    
+    # Gráfico de porcentaje de mujeres
       if(input$variable=="Mujeres"){
         resumen=resumen%>%select(Partido,Mujeres)%>%
           arrange(Mujeres)
@@ -267,12 +332,14 @@ server <- function(input, output) {
                x="Partido", y = 
                  "Porcentaje de mujeres en listas")+
           scale_y_continuous(limits = c(0, 100))+
-          annotate("text", x = Inf, y = -Inf, label = "www.decidebien.pe",
-                   hjust=1.1, vjust=-1.1, col="white", cex=6,
-                   fontface = "bold", alpha = 0.8)+
+          annotate("text", x = 11, y = 50, label = "www.decidebien.pe",
+                   hjust=0.5, vjust=0.5, col="red", cex=6,
+                   fontface = "bold", alpha = 0.2)+
           coord_flip()+
           theme_minimal()
       }
+    
+    # Gráfico de porcentaje de candidatos con experiencia previa en cargos
     if(input$variable=="Experiencia_Pol"){
       resumen=resumen%>%select(Partido,Experiencia_Pol)%>%
         arrange(Experiencia_Pol)
@@ -284,12 +351,19 @@ server <- function(input, output) {
                "% de candidatos con cargos electos anteriores")+
         scale_y_continuous(limits = c(0, 100))+
         coord_flip()+
-        theme_minimal()
+        theme_minimal()+
+        annotate("text", x = 11, y = 50, label = "www.decidebien.pe",
+                 hjust=0.5, vjust=0.5, col="red", cex=6,
+                 fontface = "bold", alpha = 0.2)
     }
+    
+    # Gráfico final
     print(p)
     }
   )
 
+  
+  # Mapa de main panel de primera página
 #=====================
 # Mapa
 #=====================  
