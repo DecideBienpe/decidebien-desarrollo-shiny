@@ -5,11 +5,14 @@ library(ggplot2)
 library(grid)
 library(stringr)
 
-source("Functions.R")
+source("./src/Functions.R")
+source("./src/ggraficoresumen.R")
 
-load("sets.RData")
+dfVariable <- ReadTableVariable()
+load("./Data/sets.RData")
 
-conn <- RSQLite::dbConnect(RSQLite::SQLite(), "DecideBien.db")
+resumen.general.variable.choices <- dfVariable$Variable
+
 ui <- navbarPage(title = "DecideBien",
                  
 # Primera página de la barra de navegación
@@ -141,32 +144,7 @@ ui <- navbarPage(title = "DecideBien",
       ),
 
 # Segunda página de la barra de navegación
-tabPanel("ResumenGeneral",
-         
-         p("Resumen de la información por partido a nivel nacional"),
-         
-         # Layout para resumen general
-         sidebarLayout(
-           
-           # Sidebar panel para input de variable
-           sidebarPanel(
-             selectInput("variable","Variable:",
-                         choices=colnames(resumen[,-c(1,2,6)])),
-             hr(),
-             helpText("Toma en cuenta las listas que NO
-                      estan declaradas improcedentes")
-           ),
-           
-           # Panel de gráfico de resumen
-           mainPanel(
-             plotOutput("resumen1"),
-             
-             tags$hr(),
-             
-             # Tabla de resumen
-             DT::dataTableOutput("tableResumen")
-           )
-         )),
+tpresumengeneral(resumen.general.variable.choices),
 
 # Tercera página de la barra de navegación: Análisis Bivariado
 tpAB(resumen=resumen),
@@ -190,7 +168,7 @@ tabPanel("Créditos",
            tags$li("Javier Tarrillo (@jtarrillov)"),
            tags$li("Eliana Carlin (@ElianaCarlin)"),
            tags$li("Ricardo Moran (@RicardoMoran)"),
-           tags$li("Michele Gabriela Fernandez (@La_micha)"),
+           tags$li("Michele Gabriela Fernandez (@La_micha)")
          ),
          
          h4("Colaboradores/Desarrolladores"),
@@ -199,7 +177,7 @@ tabPanel("Créditos",
            tags$li("Antonio Cucho (Github: ", tags$a(href = "https://github.com/antoniocuga", "antoniocuga"),")"),
            tags$li("Luis Salas (Github: ", tags$a(href = "https://github.com/zettai", "zettai"), ")"),
            tags$li("Malena Maguina (Github: ", tags$a(href = "https://github.com/malenamaguina", "malenamaguina"), ")"),
-           tags$li("Samuel Calderon (Github: ", tags$a(href = "https://github.com/calderonsamuel", "calderonsamuel"), ")"),
+           tags$li("Samuel Calderon (Github: ", tags$a(href = "https://github.com/calderonsamuel", "calderonsamuel"), ")")
          ),
          
          p("Repositorio en Github:",
@@ -296,74 +274,30 @@ server <- function(input, output) {
     "Data actualizada al: 2019-12-03"
   })
   
+  
+  #================================
+  # 2da pagina - Resumen General
+  #================================
+  
   # Tabla en segunda página: Resumen de partidos con cantidad de ex congresistas. No está relacionada con inputs
-  output$tableResumen<-DT::renderDataTable({
-    resumen%>%filter(ExCong>0)%>%
-      select(Partido,ExCong)%>%
-      rename("NúmeroExCongresistas"="ExCong")
+  output$tableResumen <- DT::renderDataTable({
+    df <- readRDS(file = "./Data/resumen.RDS")
+    df <- df %>% 
+      filter(ExCong > 0) %>%
+      select(Partido, ExCong) %>%
+      rename("NúmeroExCongresistas" = "ExCong")
+    df
   })
   
   # Gráfico de main panel de segunda página: Resumen según variable escogida
-  output$resumen1<-renderPlot({
-    
-    # Gráfico de porcentaje de sentenciados
-      if(input$variable=="Sentenciados"){
-        resumen=resumen%>%select(Partido,Sentenciados)%>%
-          arrange(Sentenciados)
-        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Sentenciados))+
-          geom_bar(stat="identity")+
-          labs(title="Candidatos con sentencias declaradas", 
-               x="Partido", y = 
-                 "Número de candidatos con sentencias")+
-          coord_flip()+
-          theme_minimal()+
-          annotate("text", x = 11, y = 10, label = "www.decidebien.pe",
-                   hjust=0.5, vjust=0.5, col="red", cex=6,
-                   fontface = "bold", alpha = 0.2)
-      }
-    
-    # Gráfico de porcentaje de mujeres
-      if(input$variable=="Mujeres"){
-        resumen=resumen%>%select(Partido,Mujeres)%>%
-          arrange(Mujeres)
-        p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),y=Mujeres))+
-          geom_bar(stat="identity")+
-          labs(title="Inclusión de género", 
-               x="Partido", y = 
-                 "Porcentaje de mujeres en listas")+
-          scale_y_continuous(limits = c(0, 100))+
-          annotate("text", x = 11, y = 50, label = "www.decidebien.pe",
-                   hjust=0.5, vjust=0.5, col="red", cex=6,
-                   fontface = "bold", alpha = 0.2)+
-          coord_flip()+
-          theme_minimal()
-      }
-    
-    # Gráfico de porcentaje de candidatos con experiencia previa en cargos
-    if(input$variable=="Experiencia_Pol"){
-      resumen=resumen%>%select(Partido,Experiencia_Pol)%>%
-        arrange(Experiencia_Pol)
-      p=ggplot(resumen,aes(x=factor(Partido,levels=Partido),
-                           y=Experiencia_Pol))+
-        geom_bar(stat="identity")+
-        labs(title="Pasado Político", 
-             x="Partido", y = 
-               "% de candidatos con cargos electos anteriores")+
-        scale_y_continuous(limits = c(0, 100))+
-        coord_flip()+
-        theme_minimal()+
-        annotate("text", x = 11, y = 50, label = "www.decidebien.pe",
-                 hjust=0.5, vjust=0.5, col="red", cex=6,
-                 fontface = "bold", alpha = 0.2)
-    }
-    
-    # Gráfico final
-    print(p)
+  rs.variable <- shiny::eventReactive(input$tprs.gobutton, {input$tprs.variable})
+  output$resumen1<-renderPlot ({
+    p <- ggraficoresumen(variable = rs.variable())
+    p
     }
   )
 
-  
-  # Mapa de main panel de primera página
+
 #=====================
 # Mapa
 #=====================  
@@ -377,6 +311,7 @@ server <- function(input, output) {
          alt = paste("Image number", input$depa))
     
   }, deleteFile = FALSE)
+  
   #=====================
   # Analisis bivariado
   #=====================
