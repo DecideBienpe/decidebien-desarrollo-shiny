@@ -5,7 +5,7 @@ library(ggplot2)
 # library(grid)
 library(stringr) 
 
-source("Functions.R")
+source("R/Functions.R")
 load("sets.RData")
 
 function(input, output) {
