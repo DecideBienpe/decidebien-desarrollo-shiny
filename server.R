@@ -1,12 +1,17 @@
 library(shiny)
 library(dplyr)
 library(DT)
-library(ggplot2)
+# library(ggplot2)
 # library(grid)
-library(stringr) 
+# library(stringr)
 
-source("R/Functions.R")
-load("sets.RData")
+source("./src/Functions.R")
+source("./src/ggraficoresumen.R")
+
+dfVariable <- ReadTableVariable()
+load("./Data/sets.RData")
+
+resumen.general.variable.choices <- dfVariable$Variable
 
 function(input, output) {
   
@@ -97,19 +102,28 @@ function(input, output) {
     "Data actualizada al: 2019-12-03"
   })
   
+  
+  #================================
+  # 2da pagina - Resumen General
+  #================================
+  
   # Tabla en segunda página: Resumen de partidos con cantidad de ex congresistas. No está relacionada con inputs
   output$tableResumen<-DT::renderDataTable({
-    resumen%>%filter(ExCong>0)%>%
-      select(Partido,ExCong)%>%
-      rename("NúmeroExCongresistas"="ExCong")
+    df <- readRDS(file = "./Data/resumen.RDS")
+    df <- df %>% 
+      filter(ExCong > 0) %>%
+      select(Partido, ExCong) %>%
+      rename("NúmeroExCongresistas" = "ExCong")
+    df
   })
   
   # Gráfico de main panel de segunda página: Resumen según variable escogida
+  rs.variable <- shiny::eventReactive(input$tprs.gobutton, {input$tprs.variable})
   output$resumen1<-renderPlot({
-    
-    grafico_resumen(df = resumen, variable = input$variable)
-    
-  })
+    p <- ggraficoresumen(variable = rs.variable())
+    p
+  }
+  )
   
   
   # Mapa de main panel de primera página
