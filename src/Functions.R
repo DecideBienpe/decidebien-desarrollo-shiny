@@ -94,7 +94,8 @@ getbiv <- function(depa, varX, varY){
   
 ReadTableVariable <- function() {
   conn <- RSQLite::dbConnect(RSQLite::SQLite(), "./Data/DecideBien.db")
-  dfVariable <- RSQLite::dbReadTable(conn = conn, "Variable", Variable, overwrite = TRUE)
+  # dfVariable <- RSQLite::dbReadTable(conn = conn, "Variable", Variable, overwrite = TRUE)
+  dfVariable <- readr::read_csv("./Data/raw/Variable.csv", col_types = "dcccd")
   RSQLite::dbDisconnect(conn)
   return(dfVariable)
 }
