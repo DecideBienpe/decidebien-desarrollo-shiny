@@ -12,7 +12,12 @@ ggraficoresumen <- function(variable){
     labs(title=strtitle, x="Partido", y = strylabel) +
     coord_flip() +
     theme_minimal() +
-    annotate("text", x = 11, y = 10, label = "www.decidebien.pe",
+    geom_text(aes(x = Partido, 
+                  y = !!rlang::sym(variable) - 0.5, 
+                  label = !!rlang::sym(variable), 
+                  hjust = 1), 
+              color = "#FFFFFF")+
+    annotate("text", x = c(5.5, 11, 16.5), y = max(resumen[[variable]])/2, label = "www.decidebien.pe",
              hjust=0.5, vjust=0.5, col="red", cex=6,
              fontface = "bold", alpha = 0.2)  
   return(p)
