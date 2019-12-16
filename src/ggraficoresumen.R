@@ -1,6 +1,7 @@
 ggraficoresumen <- function(variable){
   dfVariable <- ReadTableVariable()
-  resumen <- readRDS("./Data/resumen.RDS") %>%
+  resumen <- resumen
+    #readRDS("./Data/resumen.RDS") %>%
   select(Partido, !!rlang::sym(variable)) %>%
   arrange(!!rlang::sym(variable))
 

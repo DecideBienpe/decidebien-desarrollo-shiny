@@ -1,7 +1,7 @@
 library(shiny)
 library(dplyr)
 library(DT)
-# library(ggplot2)
+ library(ggplot2)
 # library(grid)
 # library(stringr)
 
@@ -10,6 +10,7 @@ source("./src/ggraficoresumen.R")
 
 dfVariable <- ReadTableVariable()
 load("./Data/sets.RData")
+load("./Data/resumen.RData")
 
 resumen.general.variable.choices <- dfVariable$Variable
 
@@ -109,12 +110,25 @@ function(input, output) {
   
   # Tabla en segunda página: Resumen de partidos con cantidad de ex congresistas. No está relacionada con inputs
   output$tableResumen<-DT::renderDataTable({
-    df <- readRDS(file = "./Data/resumen.RDS")
-    df <- df %>% 
-      filter(ExCong > 0) %>%
-      select(Partido, ExCong) %>%
-      rename("NúmeroExCongresistas" = "ExCong")
-    df
+    data=data_frame()
+    if(input$tprs.variable=="Experiencia_Pol"){
+      data=t1
+    }
+    if(input$tprs.variable=="Sentencias_Penal"){
+      data=t2
+    }
+    if(input$tprs.variable=="Sentencias_otros"){
+      data=t3
+    }
+    if(input$tprs.variable=="ExCongresitas"){
+      data=resumen%>%filter(ExCongresitas>0)%>%
+        select(Partido,ExCongresitas)%>%arrange(desc(ExCongresitas))%>%
+        rename("NúmeroExCongresistas"="ExCongresitas")
+    }
+    if(input$tprs.variable=="Mujeres"){
+      data=t4
+    }
+    data
   })
   
   # Gráfico de main panel de segunda página: Resumen según variable escogida

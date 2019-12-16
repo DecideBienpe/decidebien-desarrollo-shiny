@@ -1,4 +1,6 @@
 IdVariable,Variable,Titulo,ylabel,flag_GraficoResumen
-1,Sentenciados,Candidatos con sentencias declaradas,Numero de candidatos con sentencias,1
-2,Mujeres,Inclusión de género,Porcentaje de mujeres en listas,1
-3,Experiencia_Pol,Pasado Político,% de candidatos con cargos electos anteriores,1
+1,Sentencias_Penal,Candidatos con sentencias penales declaradas,Numero de candidatos con sentencias,1
+2,Sentencias_otros,Candidatos con otras sentencias declaradas,Numero de candidatos con sentencias,1
+3,Mujeres,Inclusi—n de gŽnero,Porcentaje de mujeres en listas,1
+4,Experiencia_Pol,Candidatos que han ejercido otros cargos electos,% de candidatos con cargos electos anteriores,1
+5,ExCongresitas,Candidatos electos en 2016,Nœmero de candidatos electos del 2016,1
