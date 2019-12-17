@@ -134,7 +134,7 @@ function(input, output) {
   # Gráfico de main panel de segunda página: Resumen según variable escogida
   rs.variable <- shiny::eventReactive(input$tprs.gobutton, {input$tprs.variable})
   output$resumen1<-renderPlot({
-    p <- ggraficoresumen(variable = rs.variable())
+    p <- ggraficoresumen(variable = rs.variable(), resumen = resumen)
     p
   }
   )
