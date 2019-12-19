@@ -13,11 +13,10 @@ ggraficoresumen <- function(variable, resumen){
     labs(title=strtitle, x="Partido", y = strylabel) +
     coord_flip() +
     theme_minimal() +
-    geom_text(aes(x = Partido, 
-                  y = !!rlang::sym(variable) - 0.5, 
-                  label = !!rlang::sym(variable), 
-                  hjust = 1), 
-              color = "#FFFFFF")+
+    geom_label(aes(label = !!rlang::sym(variable), 
+                  hjust = 1),
+                  size = 3,
+                  label.padding = unit(0.15, "lines"))+
     annotate("text", x = c(5.5, 11, 16.5), y = max(resumen[[variable]])/2, label = "www.decidebien.pe",
              hjust=0.5, vjust=0.5, col="red", cex=6,
              fontface = "bold", alpha = 0.2)  
