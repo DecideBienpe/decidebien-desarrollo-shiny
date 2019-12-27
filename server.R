@@ -3,7 +3,7 @@ library(dplyr)
 library(DT)
  library(ggplot2)
 # library(grid)
-# library(stringr)
+library(stringr)
 
 source("./src/Functions.R")
 source("./src/ggraficoresumen.R")
@@ -74,11 +74,13 @@ function(input, output) {
     # Seleccionando variables relevantes de datos de candidatos en listas filtradas. Es la tabla que ve el usuario
     datos() %>%
       dplyr::select(Partido,Candidato,Número,Sexo,
-                    Edad,ConSentencia,Experiencia_Pol,Estudios) %>%
+                    Edad,ConSentencia,Experiencia_Pol,Estudios,
+                    strEstadoExp) %>%
       mutate(str_numero = as.character(`Número`),
              str_numero =  str_pad(str_numero, width = 2, side = "left", pad = "0")) %>% 
       arrange(Partido, str_numero)%>%
-      dplyr::select(-str_numero) %>% 
+      filter(!strEstadoExp%in%c("EXCLUSION","IMPROCEDENTE"))%>%
+      dplyr::select(-c("str_numero","strEstadoExp"))%>% 
       distinct()%>%
       DT::datatable(options = list(pageLength = 50))
   })
