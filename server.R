@@ -76,7 +76,7 @@ function(input, output) {
       dplyr::select(Partido,Candidato,Número,Sexo,
                     Edad,ConSentencia,Experiencia_Pol,Estudios) %>%
       mutate(str_numero = as.character(`Número`),
-             str_numero =  str_pad(str_numero, width = 2, side = "left", pad = "0")) %>% 
+             str_numero =  stringr::str_pad(str_numero, width = 2, side = "left", pad = "0")) %>% 
       arrange(Partido, str_numero)%>%
       dplyr::select(-str_numero) %>% 
       distinct()%>%
