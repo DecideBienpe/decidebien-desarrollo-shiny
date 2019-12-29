@@ -84,12 +84,12 @@ navbarPage(
             "ex_congreso",
             label = "Deseo no incluir listas con ex-congresistas electos (2016-2019) por:",
             choiceNames = c(
-              "Fuerza Popular",
               "Alianza Popular (APRA/PPC)",
-              "PPK",
-              "Frente Amplio"
+              "Fuerza Popular",
+              "Frente Amplio",
+              "PPK"
             ),
-            choiceValues = c(1, 2, 3, 4)
+            choiceValues = c(2,1,3,4)
           ),
           class = "resetMargin"
         ),
@@ -130,13 +130,13 @@ navbarPage(
            class = "textoInstrucciones"),
         
         # Mapa con departamento resaltado
-        imageOutput("Mapa",
-                    width = "50%",
-                    height = "50%"),
-        h5(
-          "Fuente: ",
-          tags$a(href = "https://es.wikipedia.org/wiki/Departamentos_del_Per%C3%BA#Circunscripciones_actuales", "www.wikipedia.org")
-        ),
+        #imageOutput("Mapa",
+        #            width = "50%",
+        #            height = "50%"),
+        #h5(
+        #  "Fuente: ",
+        #  tags$a(href = "https://es.wikipedia.org/wiki/Departamentos_del_Per%C3%BA#Circunscripciones_actuales", "www.wikipedia.org")
+        #),
         
         # Panel de tablas filtrados
         tabsetPanel(
@@ -164,7 +164,7 @@ navbarPage(
   tpresumengeneral(resumen.general.variable.choices),
   
   # Tercera página de la barra de navegación: Análisis Bivariado
-  tpAB(resumen = resumen),
+  #tpAB(resumen = resumen),
   
   # Cuarta página de la barra de navegación: Créditos
   tabPanel(

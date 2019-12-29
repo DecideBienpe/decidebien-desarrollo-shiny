@@ -55,7 +55,8 @@ tpAB <- function(resumen){
 tpresumengeneral <- function(resumen.general.variable.choices) {
   
   tp <- tabPanel("ResumenGeneral",
-           p("Resumen de la información por partido a nivel nacional"),
+           h5("Resumen de la información por partido a nivel nacional"),
+           p("Selecciona una variable y dale a OK para visualizar el gráfico"),
            sidebarLayout(
              sidebarPanel(
                selectInput("tprs.variable","Variable:", choices=resumen.general.variable.choices),
