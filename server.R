@@ -166,16 +166,12 @@ function(input, output) {
     g
   })
   
-  source("R/cedula_texto.R")
+  source("R/cedula_girafe.R")
   # test de cedula
   output$cedula <- renderGirafe({
     
-    cedula <- cedula_texto()
+    cedula_girafe()
     
-    ggiraph::girafe(code = print(cedula), width_svg = (15/32)*20, height_svg = 20,
-           options = list(
-             opts_sizing(rescale = TRUE, width = 0.9))
-    )
   })
   
 } 
