@@ -22,13 +22,13 @@ cedula_onpe <- function(){
                                         xmax = xmax,
                                         ymin = ymin, 
                                         ymax = ymax), 
-              alpha = 0.35)+
+              alpha = 0.25)+
     # rectángulos para nombres de partidos
     geom_rect(data = rectangulos, aes(xmin = xmin, 
                                       xmax = xmax,
                                       ymin = ymin, 
                                       ymax = ymax), 
-              alpha = 0.2) +
+              alpha = 0.15) +
     # cuadrados para logo y voto preferencial
     geom_rect(data = preferencial, aes(xmin = xmin, 
                                        xmax = xmax,
