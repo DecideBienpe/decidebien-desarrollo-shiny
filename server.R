@@ -3,7 +3,7 @@ library(dplyr)
 library(DT)
  library(ggplot2)
 # library(grid)
-# library(stringr)
+library(stringr)
 
 source("./src/Functions.R")
 source("./src/ggraficoresumen.R")
@@ -170,7 +170,8 @@ function(input, output) {
   # test de cedula
   output$cedula <- renderGirafe({
     
-    cedula_girafe()
+    
+    cedula_girafe(datos())
     
   })
   
