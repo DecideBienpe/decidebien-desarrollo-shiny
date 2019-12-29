@@ -145,6 +145,12 @@ navbarPage(
           tabPanel(
             "Candidatos (listas filtradas)",
             DT::dataTableOutput("table3")
+          ),
+          
+          # panel de prueba
+          tabPanel("Test_cedula",
+                   ggiraph::girafeOutput("cedula")
+                   
           )
         ),
         

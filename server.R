@@ -165,4 +165,18 @@ function(input, output) {
     g <- getbiv(depa = depa(), varX = varX(), varY = varY())
     g
   })
+  
+  source("R/cedula_texto.R")
+  # test de cedula
+  output$cedula <- renderGirafe({
+    
+    cedula <- cedula_texto()
+    
+    ggiraph::girafe(code = print(cedula), width_svg = (15/32)*20, height_svg = 20,
+           options = list(
+             opts_sizing(rescale = TRUE, width = 0.9))
+    )
+  })
+  
 } 
+
