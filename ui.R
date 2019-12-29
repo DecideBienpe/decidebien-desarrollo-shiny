@@ -148,7 +148,7 @@ navbarPage(
           ),
           
           # panel de prueba
-          tabPanel("Test_cedula",
+          tabPanel("Cédula filtrada",
                    ggiraph::girafeOutput("cedula")
                    
           )
