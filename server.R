@@ -77,7 +77,7 @@ function(input, output) {
                     Edad,ConSentencia,Experiencia_Pol,Estudios,
                     strEstadoExp) %>%
       mutate(str_numero = as.character(`Número`),
-             str_numero =  str_pad(str_numero, width = 2, side = "left", pad = "0")) %>% 
+             str_numero =  stringr::str_pad(str_numero, width = 2, side = "left", pad = "0")) %>% 
       arrange(Partido, str_numero)%>%
       filter(!strEstadoExp%in%c("EXCLUSION","IMPROCEDENTE"))%>%
       dplyr::select(-c("str_numero","strEstadoExp"))%>% 
@@ -167,4 +167,15 @@ function(input, output) {
     g <- getbiv(depa = depa(), varX = varX(), varY = varY())
     g
   })
+  
+  source("R/cedula_girafe.R")
+  # test de cedula
+  output$cedula <- renderGirafe({
+    
+    
+    cedula_girafe(datos())
+    
+  })
+  
 } 
+
